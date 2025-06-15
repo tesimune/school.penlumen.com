@@ -1,8 +1,10 @@
 import { axiosInstance } from '@/lib/axios';
 
-export const useBranch = () => {
-  const index = async () => {
-    const response = await axiosInstance.get('/api/v1/branch/index');
+export const useUser = () => {
+  const index = async (role: string) => {
+    const response = await axiosInstance.get(
+      `/api/v1/user/index?role=${role.toUpperCase()}`
+    );
     const data = response.data;
 
     if (!data.success || !data.data) {
@@ -18,12 +20,16 @@ export const useBranch = () => {
     }
   };
 
-  const create = async (branchData: any) => {
-    const response = await axiosInstance.post('/api/v1/branch/create', {
-      name: branchData.name,
-      email: branchData.email,
-      contact: branchData.contact,
-      address: branchData.address,
+  const create = async (userData: any) => {
+    const response = await axiosInstance.post('/api/v1/register', {
+      name: userData.name,
+      email: userData.email,
+      password: userData.password,
+      contact: userData.contact,
+      alt_contact: userData.alt_contact,
+      position: userData.position,
+      address: userData.address,
+      role: userData.role,
     });
     const data = response.data;
 

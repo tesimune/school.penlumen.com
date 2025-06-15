@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Download, Plus, Search } from 'lucide-react';
+import { Download, MenuSquareIcon, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -37,9 +38,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -47,78 +45,104 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { useUser } from '@/hooks/user';
+import IsLoading from '@/components/is-loading';
+
+interface User {
+  uuid: string;
+  name: string;
+  email: string;
+  avatar: string;
+  address: string;
+  contact: string;
+  alt_contact: string;
+  position: string;
+}
+
+interface Staff {
+  user: User;
+}
 
 export default function StaffPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [staffs, setStaffs] = useState<Staff[] | []>([]);
+  const { index, create } = useUser();
+  const router = useRouter();
 
-  // Mock staff data
-  const staffMembers = [
-    {
-      id: 1,
-      uuid: 'staff-uuid-1',
-      first_name: 'David',
-      last_name: 'Wilson',
-      email: 'david.wilson@example.com',
-      contact: '+1234567890',
-      alt_contact: '+0987654321',
-      position: 'Principal',
-      address: '123 Main St, City',
-      created_at: '2023-01-15',
-    },
-    {
-      id: 2,
-      uuid: 'staff-uuid-2',
-      first_name: 'Sarah',
-      last_name: 'Johnson',
-      email: 'sarah.johnson@example.com',
-      contact: '+2345678901',
-      alt_contact: null,
-      position: 'Vice Principal',
-      address: '456 Oak Ave, Town',
-      created_at: '2023-01-16',
-    },
-    {
-      id: 3,
-      uuid: 'staff-uuid-3',
-      first_name: 'Michael',
-      last_name: 'Brown',
-      email: 'michael.brown@example.com',
-      contact: '+3456789012',
-      alt_contact: '+2109876543',
-      position: 'Teacher',
-      address: '789 Pine Rd, Village',
-      created_at: '2023-01-17',
-    },
-    {
-      id: 4,
-      uuid: 'staff-uuid-4',
-      first_name: 'Jennifer',
-      last_name: 'Davis',
-      email: 'jennifer.davis@example.com',
-      contact: '+4567890123',
-      alt_contact: null,
-      position: 'Administrator',
-      address: '321 Elm St, County',
-      created_at: '2023-01-18',
-    },
-  ];
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    contact: '',
+    alt_contact: '',
+    position: '',
+    address: '',
+    role: 'staff',
+  });
 
-  // Filter staff based on search query
-  const filteredStaff = staffMembers.filter(
+  const fetchData = async () => {
+    setIsLoading(true);
+    const response = await index('staff');
+    if (response.success) {
+      setStaffs(response.data.user);
+    } else {
+      console.log(response);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    if (!staffs.length) {
+      fetchData();
+    }
+  }, []);
+
+  const saveStaff = async () => {
+    setIsLoading(true);
+    const response = await create(formData);
+    if (response.success) {
+      setIsAddDialogOpen(false);
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        contact: '',
+        alt_contact: '',
+        position: '',
+        address: '',
+        role: 'staff',
+      });
+      fetchData();
+    } else {
+      console.log(response);
+    }
+    setIsLoading(false);
+  };
+
+  const filteredStaff = staffs.filter(
     (staff) =>
-      staff.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      staff.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      staff.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      staff.contact.includes(searchQuery) ||
-      (staff.alt_contact && staff.alt_contact.includes(searchQuery)) ||
-      staff.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      staff.address.toLowerCase().includes(searchQuery.toLowerCase())
+      (staff.user?.name ? staff.user.name.toLowerCase() : '').includes(
+        searchQuery.toLowerCase()
+      ) ||
+      (staff.user?.email ? staff.user.email.toLowerCase() : '').includes(
+        searchQuery.toLowerCase()
+      ) ||
+      (staff.user?.contact || '').includes(searchQuery) ||
+      (staff.user?.alt_contact
+        ? staff.user.alt_contact.includes(searchQuery)
+        : false) ||
+      (staff.user?.address ? staff.user.address.toLowerCase() : '').includes(
+        searchQuery.toLowerCase()
+      )
   );
 
-  // Function to get badge color based on position
   const getBadgeVariant = (position: string) => {
-    switch (position.toLowerCase()) {
+    switch (position?.toLowerCase()) {
       case 'principal':
         return 'default';
       case 'vice principal':
@@ -131,6 +155,10 @@ export default function StaffPage() {
         return 'outline';
     }
   };
+
+  if (isLoading) {
+    return <IsLoading />;
+  }
 
   return (
     <div className='space-y-6'>
@@ -161,15 +189,16 @@ export default function StaffPage() {
                 </DialogDescription>
               </DialogHeader>
               <form className='space-y-4 py-4'>
-                <div className='grid grid-cols-2 gap-4'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='first-name'>First Name</Label>
-                    <Input id='first-name' placeholder='e.g., John' />
-                  </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='last-name'>Last Name</Label>
-                    <Input id='last-name' placeholder='e.g., Doe' />
-                  </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='name'>Full Name</Label>
+                  <Input
+                    id='name'
+                    placeholder='e.g., John Doe'
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                  />
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='email'>Email</Label>
@@ -177,33 +206,66 @@ export default function StaffPage() {
                     id='email'
                     type='email'
                     placeholder='e.g., john.doe@example.com'
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                   />
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='password'>Password</Label>
-                  <Input id='password' type='password' />
+                  <Input
+                    id='password'
+                    type='password'
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                  />
                 </div>
                 <div className='grid grid-cols-2 gap-4'>
                   <div className='space-y-2'>
                     <Label htmlFor='contact'>Contact Number</Label>
-                    <Input id='contact' placeholder='e.g., +1234567890' />
+                    <Input
+                      id='contact'
+                      placeholder='e.g., +1234567890'
+                      value={formData.contact}
+                      onChange={(e) =>
+                        setFormData({ ...formData, contact: e.target.value })
+                      }
+                    />
                   </div>
                   <div className='space-y-2'>
                     <Label htmlFor='alt-contact'>
                       Alternative Contact (Optional)
                     </Label>
-                    <Input id='alt-contact' placeholder='e.g., +0987654321' />
+                    <Input
+                      id='alt-contact'
+                      placeholder='e.g., +0987654321'
+                      value={formData.alt_contact}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          alt_contact: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='position'>Position</Label>
-                  <Select>
-                    <SelectTrigger>
+                  <Select
+                    value={formData.position}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, position: value })
+                    }
+                  >
+                    <SelectTrigger className='w-full'>
                       <SelectValue placeholder='Select position' />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value='principal'>Principal</SelectItem>
-                      <SelectItem value='vice-principal'>
+                      <SelectItem value='vice principal'>
                         Vice Principal
                       </SelectItem>
                       <SelectItem value='teacher'>Teacher</SelectItem>
@@ -227,7 +289,9 @@ export default function StaffPage() {
                   >
                     Cancel
                   </Button>
-                  <Button type='submit'>Save Staff</Button>
+                  <Button onClick={() => saveStaff()} type='submit'>
+                    Save Staff
+                  </Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -279,44 +343,44 @@ export default function StaffPage() {
                   </TableRow>
                 ) : (
                   filteredStaff.map((staff) => (
-                    <TableRow key={staff.id}>
+                    <TableRow key={staff.user.uuid}>
                       <TableCell className='font-medium'>
                         <div className='flex items-center gap-2'>
                           <Avatar className='h-8 w-8'>
                             <AvatarImage
-                              src={`/placeholder.svg?height=32&width=32&text=${staff.first_name.charAt(
-                                0
-                              )}`}
+                              src={`/placeholder.svg?height=32&width=32&text=${(
+                                staff.user?.name ?? 'U'
+                              ).charAt(0)}`}
                             />
                             <AvatarFallback>
-                              {staff.first_name.charAt(0)}
+                              {(staff.user?.name ?? 'U').charAt(0)}
                             </AvatarFallback>
                           </Avatar>
-                          {staff.first_name} {staff.last_name}
+                          {staff.user?.name}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getBadgeVariant(staff.position)}>
-                          {staff.position}
+                        <Badge variant={getBadgeVariant(staff.user.position)}>
+                          {staff.user.position}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className='flex flex-col'>
-                          <span>{staff.contact}</span>
-                          {staff.alt_contact && (
+                          <span>{staff.user.contact}</span>
+                          {staff.user.alt_contact && (
                             <span className='text-xs text-muted-foreground'>
-                              {staff.alt_contact}
+                              {staff.user.alt_contact}
                             </span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>{staff.email}</TableCell>
-                      <TableCell>{staff.address}</TableCell>
+                      <TableCell>{staff.user.email}</TableCell>
+                      <TableCell>{staff.user.address}</TableCell>
                       <TableCell className='text-right'>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant='ghost' size='sm'>
-                              Actions
+                              <MenuSquareIcon />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align='end'>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Plus, Search } from 'lucide-react';
+import { Download, MenuSquareIcon, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -210,7 +210,7 @@ export default function StudentsPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant='ghost' size='sm'>
-                              Actions
+                              <MenuSquareIcon />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align='end'>

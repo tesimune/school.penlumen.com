@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Download, Plus, Search } from 'lucide-react';
+import { useUser } from '@/hooks/user';
+import { Download, MenuSquareIcon, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -37,8 +39,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Select,
   SelectContent,
@@ -46,69 +46,113 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import IsLoading from '@/components/is-loading';
+
+interface User {
+  uuid: string;
+  name: string;
+  email: string;
+  avatar: string;
+  address: string;
+  contact: string;
+  alt_contact: string;
+  position: string;
+}
+
+interface Parent {
+  user: User;
+}
 
 export default function parentPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [parents, setParents] = useState<Parent[] | []>([]);
+  const { index, create } = useUser();
+  const router = useRouter();
 
-  // Mock parent data
-  const parentMembers = [
-    {
-      id: 1,
-      uuid: 'parent-uuid-1',
-      first_name: 'David',
-      last_name: 'Wilson',
-      email: 'david.wilson@example.com',
-      contact: '+1234567890',
-      alt_contact: '+0987654321',
-      address: '123 Main St, City',
-      created_at: '2023-01-15',
-    },
-    {
-      id: 2,
-      uuid: 'parent-uuid-2',
-      first_name: 'Sarah',
-      last_name: 'Johnson',
-      email: 'sarah.johnson@example.com',
-      contact: '+2345678901',
-      alt_contact: null,
-      address: '456 Oak Ave, Town',
-      created_at: '2023-01-16',
-    },
-    {
-      id: 3,
-      uuid: 'parent-uuid-3',
-      first_name: 'Michael',
-      last_name: 'Brown',
-      email: 'michael.brown@example.com',
-      contact: '+3456789012',
-      alt_contact: '+2109876543',
-      address: '789 Pine Rd, Village',
-      created_at: '2023-01-17',
-    },
-    {
-      id: 4,
-      uuid: 'parent-uuid-4',
-      first_name: 'Jennifer',
-      last_name: 'Davis',
-      email: 'jennifer.davis@example.com',
-      contact: '+4567890123',
-      alt_contact: null,
-      address: '321 Elm St, County',
-      created_at: '2023-01-18',
-    },
-  ];
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    contact: '',
+    alt_contact: '',
+    position: '',
+    address: '',
+    role: 'parent',
+  });
 
-  // Filter parent based on search query
-  const filteredparent = parentMembers.filter(
+  const fetchData = async () => {
+    setIsLoading(true);
+    const response = await index('parent');
+    if (response.success) {
+      setParents(response.data.user);
+    } else {
+      console.log(response);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    if (!parents.length) {
+      fetchData();
+    }
+  }, []);
+
+  const saveParent = async () => {
+    setIsLoading(true);
+    const response = await create(formData);
+    if (response.success) {
+      setIsAddDialogOpen(false);
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        contact: '',
+        alt_contact: '',
+        position: '',
+        address: '',
+        role: 'parent',
+      });
+      fetchData();
+    } else {
+      console.log(response);
+    }
+    setIsLoading(false);
+  };
+
+  const filteredparent = parents.filter(
     (parent) =>
-      parent.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      parent.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      parent.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      parent.contact.includes(searchQuery) ||
-      (parent.alt_contact && parent.alt_contact.includes(searchQuery)) ||
-      parent.address.toLowerCase().includes(searchQuery.toLowerCase())
+      (parent.user?.name ? parent.user.name.toLowerCase() : '').includes(
+        searchQuery.toLowerCase()
+      ) ||
+      (parent.user?.email ? parent.user.email.toLowerCase() : '').includes(
+        searchQuery.toLowerCase()
+      ) ||
+      (parent.user?.contact || '').includes(searchQuery) ||
+      (parent.user?.alt_contact
+        ? parent.user.alt_contact.includes(searchQuery)
+        : false) ||
+      (parent.user?.address ? parent.user.address.toLowerCase() : '').includes(
+        searchQuery.toLowerCase()
+      )
   );
+
+  const getBadgeVariant = (position: string) => {
+    switch (position?.toLowerCase()) {
+      case 'parent':
+        return 'default';
+      default:
+        return 'outline';
+    }
+  };
+
+  if (isLoading) {
+    return <IsLoading />;
+  }
 
   return (
     <div className='space-y-6'>
@@ -139,15 +183,16 @@ export default function parentPage() {
                 </DialogDescription>
               </DialogHeader>
               <form className='space-y-4 py-4'>
-                <div className='grid grid-cols-2 gap-4'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='first-name'>First Name</Label>
-                    <Input id='first-name' placeholder='e.g., John' />
-                  </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='last-name'>Last Name</Label>
-                    <Input id='last-name' placeholder='e.g., Doe' />
-                  </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='name'>Full Name</Label>
+                  <Input
+                    id='name'
+                    placeholder='e.g., John Doe'
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                  />
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='email'>Email</Label>
@@ -155,23 +200,71 @@ export default function parentPage() {
                     id='email'
                     type='email'
                     placeholder='e.g., john.doe@example.com'
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                   />
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='password'>Password</Label>
-                  <Input id='password' type='password' />
+                  <Input
+                    id='password'
+                    type='password'
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                  />
                 </div>
                 <div className='grid grid-cols-2 gap-4'>
                   <div className='space-y-2'>
                     <Label htmlFor='contact'>Contact Number</Label>
-                    <Input id='contact' placeholder='e.g., +1234567890' />
+                    <Input
+                      id='contact'
+                      placeholder='e.g., +1234567890'
+                      value={formData.contact}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          contact: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                   <div className='space-y-2'>
                     <Label htmlFor='alt-contact'>
                       Alternative Contact (Optional)
                     </Label>
-                    <Input id='alt-contact' placeholder='e.g., +0987654321' />
+                    <Input
+                      id='alt-contact'
+                      placeholder='e.g., +0987654321'
+                      value={formData.alt_contact}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          alt_contact: e.target.value,
+                        })
+                      }
+                    />
                   </div>
+                </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='position'>Position</Label>
+                  <Select
+                    value={formData.position}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, position: value })
+                    }
+                  >
+                    <SelectTrigger className='w-full'>
+                      <SelectValue placeholder='Select position' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='parent'>Parent</SelectItem>
+                      <SelectItem value='guardian'>Guardian</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='address'>Address</Label>
@@ -185,7 +278,9 @@ export default function parentPage() {
                   >
                     Cancel
                   </Button>
-                  <Button type='submit'>Save parent</Button>
+                  <Button onClick={() => saveParent()} type='submit'>
+                    Save parent
+                  </Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -221,6 +316,7 @@ export default function parentPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
+                  <TableHead>Position</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Address</TableHead>
@@ -236,39 +332,44 @@ export default function parentPage() {
                   </TableRow>
                 ) : (
                   filteredparent.map((parent) => (
-                    <TableRow key={parent.id}>
+                    <TableRow key={parent.user.uuid}>
                       <TableCell className='font-medium'>
                         <div className='flex items-center gap-2'>
                           <Avatar className='h-8 w-8'>
                             <AvatarImage
-                              src={`/placeholder.svg?height=32&width=32&text=${parent.first_name.charAt(
-                                0
-                              )}`}
+                              src={`/placeholder.svg?height=32&width=32&text=${(
+                                parent.user?.name ?? 'U'
+                              ).charAt(0)}`}
                             />
                             <AvatarFallback>
-                              {parent.first_name.charAt(0)}
+                              {(parent.user?.name ?? 'U').charAt(0)}
                             </AvatarFallback>
                           </Avatar>
-                          {parent.first_name} {parent.last_name}
+                          {parent.user?.name}
                         </div>
                       </TableCell>
                       <TableCell>
+                        <Badge variant={getBadgeVariant(parent.user.position)}>
+                          {parent.user.position}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
                         <div className='flex flex-col'>
-                          <span>{parent.contact}</span>
-                          {parent.alt_contact && (
+                          <span>{parent.user?.contact}</span>
+                          {parent.user?.alt_contact && (
                             <span className='text-xs text-muted-foreground'>
-                              {parent.alt_contact}
+                              {parent.user?.alt_contact}
                             </span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>{parent.email}</TableCell>
-                      <TableCell>{parent.address}</TableCell>
+                      <TableCell>{parent.user.email}</TableCell>
+                      <TableCell>{parent.user?.address}</TableCell>
                       <TableCell className='text-right'>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant='ghost' size='sm'>
-                              Actions
+                              <MenuSquareIcon />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align='end'>
@@ -276,7 +377,7 @@ export default function parentPage() {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem>View Profile</DropdownMenuItem>
                             <DropdownMenuItem>Edit parent</DropdownMenuItem>
-                            <DropdownMenuItem>Assign Classes</DropdownMenuItem>
+                            <DropdownMenuItem>Assign child</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className='text-destructive'>
                               Delete parent
