@@ -106,7 +106,6 @@ export default function StaffPage() {
     setIsLoading(true);
     const response = await create(formData);
     if (response.success) {
-      setIsAddDialogOpen(false);
       setFormData({
         name: '',
         email: '',
@@ -118,6 +117,7 @@ export default function StaffPage() {
         role: 'staff',
       });
       fetchData();
+      setIsAddDialogOpen(false);
     } else {
       console.log(response);
     }
@@ -181,7 +181,7 @@ export default function StaffPage() {
                 Add Staff
               </Button>
             </DialogTrigger>
-            <DialogContent className='max-w-md'>
+            <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto'>
               <DialogHeader>
                 <DialogTitle>Add New Staff</DialogTitle>
                 <DialogDescription>

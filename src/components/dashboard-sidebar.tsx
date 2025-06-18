@@ -78,9 +78,10 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
     { title: 'parents', icon: Users, href: '/staff/parents' },
     { title: 'Staffs', icon: GraduationCap, href: '/staff/staffs' },
     { title: 'Classes', icon: BookOpen, href: '/staff/classes' },
+    { title: 'Students', icon: Users, href: '/staff/students' },
+    { title: 'Settings', icon: Settings, href: '/staff/settings' },
     { title: 'Schedule', icon: Calendar, href: '/staff/schedule' },
     { title: 'Reports', icon: BarChart3, href: '/staff/reports' },
-    { title: 'Settings', icon: Settings, href: '/staff/settings' },
   ];
 
   return (

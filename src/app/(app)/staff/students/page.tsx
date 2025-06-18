@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Download, MenuSquareIcon, Plus, Search } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Card,
   CardContent,
@@ -11,7 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -28,13 +31,58 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Upload, UserPlus, X } from 'lucide-react';
+
+interface AddStudentModalProps {
+  branches?: { uuid: string; name: string }[];
+  classes?: { uuid: string; name: string; branch_uuid: string }[];
+  parents?: { uuid: string; name: string; email: string }[];
+}
 
 export default function StudentsPage() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    avatar: '',
+    reg_number: '',
+    class_uuid: '',
+    branch_uuid: '',
+    parent_uuid: '',
+  });
 
-  // Mock student data
+  const branches = [
+    { uuid: 'branch-1', name: 'Main Campus' },
+    { uuid: 'branch-2', name: 'North Branch' },
+    { uuid: 'branch-3', name: 'South Branch' },
+  ];
+  const classes = [
+    { uuid: 'class-1', name: 'Grade 1A', branch_uuid: 'branch-1' },
+    { uuid: 'class-2', name: 'Grade 1B', branch_uuid: 'branch-1' },
+    { uuid: 'class-3', name: 'Grade 2A', branch_uuid: 'branch-1' },
+    { uuid: 'class-4', name: 'Grade 1A', branch_uuid: 'branch-2' },
+  ];
+  const parents = [
+    { uuid: 'parent-1', name: 'John Smith', email: 'john@example.com' },
+    { uuid: 'parent-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
+    { uuid: 'parent-3', name: 'Michael Brown', email: 'michael@example.com' },
+  ];
   const students = [
     {
       id: 1,
@@ -102,6 +150,41 @@ export default function StudentsPage() {
     },
   ];
 
+  const filteredClasses = classes.filter(
+    (cls) => cls.branch_uuid === formData.branch_uuid
+  );
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFormData({ ...formData, avatar: e.target?.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle form submission here
+    console.log(formData);
+
+    setFormData({
+      name: '',
+      avatar: '',
+      reg_number: '',
+      class_uuid: '',
+      branch_uuid: '',
+      parent_uuid: '',
+    });
+    setIsAddDialogOpen(false);
+  };
+
+  const removeAvatar = () => {
+    setFormData({ ...formData, avatar: '' });
+  };
+
   // Filter students based on search query
   const filteredStudents = students.filter(
     (student) =>
@@ -125,10 +208,252 @@ export default function StudentsPage() {
             <Download className='mr-2 h-4 w-4' />
             Export
           </Button>
-          <Button size='sm'>
-            <Plus className='mr-2 h-4 w-4' />
-            Add Student
-          </Button>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size='sm'>
+                <Plus className='mr-2 h-4 w-4' />
+                Add Student
+              </Button>
+            </DialogTrigger>
+            <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto'>
+              <DialogHeader>
+                <DialogTitle>Add New Student</DialogTitle>
+                <DialogDescription>
+                  Enter the student details to add them to the school system.
+                </DialogDescription>
+              </DialogHeader>
+
+              <form onSubmit={handleSubmit} className='space-y-4 py-4'>
+                {/* Avatar Upload Section */}
+                <div className='flex flex-col items-center space-y-4'>
+                  <div className='relative'>
+                    <Avatar className='h-20 w-20'>
+                      <AvatarImage
+                        src={formData.avatar || '/placeholder.svg'}
+                      />
+                      <AvatarFallback className='text-lg'>
+                        {formData.name
+                          ? formData.name.charAt(0).toUpperCase()
+                          : '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                    {formData.avatar && (
+                      <Button
+                        type='button'
+                        variant='destructive'
+                        size='sm'
+                        className='absolute -top-2 -right-2 h-6 w-6 rounded-full p-0'
+                        onClick={removeAvatar}
+                      >
+                        <X className='h-3 w-3' />
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className='flex items-center space-x-2'>
+                    <Label htmlFor='avatar' className='cursor-pointer'>
+                      <div className='flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground'>
+                        <Upload className='h-4 w-4' />
+                        <span>Upload Photo</span>
+                      </div>
+                    </Label>
+                    <Input
+                      id='avatar'
+                      type='file'
+                      accept='image/*'
+                      className='hidden'
+                      onChange={handleAvatarChange}
+                    />
+                  </div>
+                </div>
+
+                {/* Student Name */}
+                <div className='space-y-2'>
+                  <Label htmlFor='name'>Student Name *</Label>
+                  <Input
+                    id='name'
+                    placeholder="Enter student's full name"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                {/* Registration Number */}
+                <div className='space-y-2'>
+                  <Label htmlFor='reg-number'>Registration Number *</Label>
+                  <Input
+                    id='reg-number'
+                    placeholder='Enter registration number'
+                    value={formData.reg_number}
+                    onChange={(e) =>
+                      setFormData({ ...formData, reg_number: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                {/* Parent Selection */}
+                <div className='space-y-2'>
+                  <Label htmlFor='parent'>Parent/Guardian *</Label>
+                  <Select
+                    value={formData.parent_uuid}
+                    onValueChange={(value) => {
+                      setFormData({
+                        ...formData,
+                        parent_uuid: value,
+                      });
+                    }}
+                    required
+                  >
+                    <SelectTrigger className='w-full'>
+                      <SelectValue placeholder='Select parent/guardian' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {parents.map((parent) => (
+                        <SelectItem key={parent.uuid} value={parent.uuid}>
+                          <div className='flex flex-col'>
+                            <span>{parent.name}</span>
+                            <span className='text-xs text-muted-foreground'>
+                              {parent.email}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Branch Selection */}
+                <div className='space-y-2'>
+                  <Label htmlFor='branch'>Branch *</Label>
+                  <Select
+                    value={formData.branch_uuid}
+                    onValueChange={(value) => {
+                      setFormData({
+                        ...formData,
+                        branch_uuid: value,
+                        class_uuid: '',
+                      });
+                    }}
+                    required
+                  >
+                    <SelectTrigger className='w-full'>
+                      <SelectValue placeholder='Select branch' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {branches.map((branch) => (
+                        <SelectItem key={branch.uuid} value={branch.uuid}>
+                          {branch.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Class Selection */}
+                <div className='space-y-2'>
+                  <Label htmlFor='class'>Class *</Label>
+                  <Select
+                    value={formData.class_uuid}
+                    onValueChange={(value) => {
+                      setFormData({
+                        ...formData,
+                        class_uuid: value,
+                      });
+                    }}
+                    disabled={!formData.branch_uuid}
+                    required
+                  >
+                    <SelectTrigger className='w-full'>
+                      <SelectValue
+                        placeholder={
+                          formData.class_uuid
+                            ? 'Select class'
+                            : 'Select branch first'
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredClasses.map((cls) => (
+                        <SelectItem key={cls.uuid} value={cls.uuid}>
+                          {cls.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Summary Card */}
+                {formData.name &&
+                  formData.branch_uuid &&
+                  formData.class_uuid && (
+                    <Card className='bg-muted/50'>
+                      <CardContent className='pt-4'>
+                        <div className='text-sm space-y-1'>
+                          <p>
+                            <span className='font-medium'>Student:</span>{' '}
+                            {formData.name}
+                          </p>
+                          <p>
+                            <span className='font-medium'>Registration:</span>{' '}
+                            {formData.reg_number}
+                          </p>
+                          <p>
+                            <span className='font-medium'>Branch:</span>{' '}
+                            {
+                              branches.find(
+                                (b) => b.uuid === formData.branch_uuid
+                              )?.name
+                            }
+                          </p>
+                          <p>
+                            <span className='font-medium'>Class:</span>{' '}
+                            {
+                              classes.find(
+                                (c) => c.uuid === formData.class_uuid
+                              )?.name
+                            }
+                          </p>
+                          <p>
+                            <span className='font-medium'>Parent:</span>{' '}
+                            {
+                              parents.find(
+                                (p) => p.uuid === formData.parent_uuid
+                              )?.name
+                            }
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                <DialogFooter className='gap-2'>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    onClick={() => setIsAddDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type='submit'
+                    disabled={
+                      !formData.name ||
+                      !formData.reg_number ||
+                      !formData.parent_uuid ||
+                      !formData.branch_uuid ||
+                      !formData.class_uuid
+                    }
+                  >
+                    Add Student
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -160,10 +485,8 @@ export default function StudentsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Grade</TableHead>
-                  <TableHead>Section</TableHead>
+                  <TableHead>Class</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Email</TableHead>
                   <TableHead className='text-right'>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -193,7 +516,6 @@ export default function StudentsPage() {
                         </div>
                       </TableCell>
                       <TableCell>{student.grade}</TableCell>
-                      <TableCell>{student.section}</TableCell>
                       <TableCell>
                         <Badge
                           variant={
@@ -205,7 +527,6 @@ export default function StudentsPage() {
                           {student.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>{student.email}</TableCell>
                       <TableCell className='text-right'>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import Reports from '@/components/dashboard/reports';
 import Analytics from '@/components/dashboard/analytics';
-import { BarChart3, BookOpen, GraduationCap, Users } from 'lucide-react';
+import { BookOpen, GraduationCap, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEffect, useState } from 'react';
@@ -70,24 +70,9 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                   <CardTitle className='text-sm font-medium'>
-                    Total Students
-                  </CardTitle>
-                  <Users className='h-4 w-4 text-muted-foreground' />
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>
-                    {card.total_students}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-            <motion.div variants={item}>
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>
                     Total Parents
                   </CardTitle>
-                  <BarChart3 className='h-4 w-4 text-muted-foreground' />
+                  <Users className='h-4 w-4 text-muted-foreground' />
                 </CardHeader>
                 <CardContent>
                   <div className='text-2xl font-bold'>{card.total_parents}</div>
@@ -117,6 +102,21 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className='text-2xl font-bold'>{card.total_classes}</div>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div variants={item}>
+              <Card>
+                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                  <CardTitle className='text-sm font-medium'>
+                    Total Students
+                  </CardTitle>
+                  <Users className='h-4 w-4 text-muted-foreground' />
+                </CardHeader>
+                <CardContent>
+                  <div className='text-2xl font-bold'>
+                    {card.total_students}
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
