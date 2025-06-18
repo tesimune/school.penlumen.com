@@ -178,14 +178,8 @@ export default function ClassesPage() {
     return teacher ? teacher.name : '';
   };
 
-  // Calculate statistics
-  const totalClasses = classes.length;
-  const activeClasses = classes.filter((c) => c.status === 'active').length;
-  const totalStudents = classes.reduce((sum, c) => sum + c.studentCount, 0);
-  const totalCapacity = classes.reduce((sum, c) => sum + c.capacity, 0);
-
   return (
-    <div className='space-y-6 p-6'>
+    <div className='space-y-6'>
       <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
         <div>
           <h1 className='text-3xl font-bold tracking-tight'>Classes</h1>
@@ -205,7 +199,7 @@ export default function ClassesPage() {
                 Add Class
               </Button>
             </DialogTrigger>
-            <DialogContent className='max-w-md'>
+            <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto scroll-hidden'>
               <DialogHeader>
                 <DialogTitle>Add New Class</DialogTitle>
                 <DialogDescription>
@@ -314,60 +308,6 @@ export default function ClassesPage() {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Total Classes</CardTitle>
-            <GraduationCap className='h-4 w-4 text-muted-foreground' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{totalClasses}</div>
-            <p className='text-xs text-muted-foreground'>
-              {activeClasses} active classes
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Total Students
-            </CardTitle>
-            <Users className='h-4 w-4 text-muted-foreground' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{totalStudents}</div>
-            <p className='text-xs text-muted-foreground'>Across all classes</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Total Capacity
-            </CardTitle>
-            <Users className='h-4 w-4 text-muted-foreground' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{totalCapacity}</div>
-            <p className='text-xs text-muted-foreground'>Maximum enrollment</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Utilization</CardTitle>
-            <GraduationCap className='h-4 w-4 text-muted-foreground' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>
-              {Math.round((totalStudents / totalCapacity) * 100)}%
-            </div>
-            <p className='text-xs text-muted-foreground'>
-              Capacity utilization
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       <motion.div

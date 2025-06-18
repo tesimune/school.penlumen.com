@@ -215,7 +215,7 @@ export default function StudentsPage() {
                 Add Student
               </Button>
             </DialogTrigger>
-            <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto'>
+            <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto scroll-hidden'>
               <DialogHeader>
                 <DialogTitle>Add New Student</DialogTitle>
                 <DialogDescription>

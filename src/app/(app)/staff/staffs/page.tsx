@@ -50,6 +50,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/hooks/user';
 import IsLoading from '@/components/is-loading';
+import { toast } from 'sonner';
 
 interface User {
   uuid: string;
@@ -104,24 +105,29 @@ export default function StaffPage() {
 
   const saveStaff = async () => {
     setIsLoading(true);
-    const response = await create(formData);
-    if (response.success) {
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        contact: '',
-        alt_contact: '',
-        position: '',
-        address: '',
-        role: 'staff',
-      });
-      fetchData();
-      setIsAddDialogOpen(false);
-    } else {
-      console.log(response);
+    try {
+      const response = await create(formData);
+      if (response.success) {
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+          contact: '',
+          alt_contact: '',
+          position: '',
+          address: '',
+          role: 'staff',
+        });
+        fetchData();
+        setIsAddDialogOpen(false);
+      } else {
+        toast(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast(error.message || 'Something went wrong');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const filteredStaff = staffs.filter(
@@ -181,7 +187,7 @@ export default function StaffPage() {
                 Add Staff
               </Button>
             </DialogTrigger>
-            <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto'>
+            <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto scroll-hidden'>
               <DialogHeader>
                 <DialogTitle>Add New Staff</DialogTitle>
                 <DialogDescription>

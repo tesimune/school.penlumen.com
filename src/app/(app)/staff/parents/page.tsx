@@ -50,6 +50,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import IsLoading from '@/components/is-loading';
+import { toast } from 'sonner';
 
 interface User {
   uuid: string;
@@ -104,24 +105,29 @@ export default function parentPage() {
 
   const saveParent = async () => {
     setIsLoading(true);
-    const response = await create(formData);
-    if (response.success) {
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        contact: '',
-        alt_contact: '',
-        position: '',
-        address: '',
-        role: 'parent',
-      });
-      fetchData();
-      setIsAddDialogOpen(false);
-    } else {
-      console.log(response);
+    try {
+      const response = await create(formData);
+      if (response.success) {
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+          contact: '',
+          alt_contact: '',
+          position: '',
+          address: '',
+          role: 'parent',
+        });
+        fetchData();
+        setIsAddDialogOpen(false);
+      } else {
+        toast(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast(error.message || 'Something went wrong');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const filteredparent = parents.filter(
@@ -175,7 +181,7 @@ export default function parentPage() {
                 Add Parent
               </Button>
             </DialogTrigger>
-            <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto'>
+            <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto scroll-hidden'>
               <DialogHeader>
                 <DialogTitle>Add New Parent</DialogTitle>
                 <DialogDescription>

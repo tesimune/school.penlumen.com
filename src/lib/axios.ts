@@ -29,12 +29,12 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (error.response && error.response.data.error === 'unauthenticated') {
       Cookies.remove('user');
       Cookies.remove('token');
       Cookies.remove('branch');
-      window.location.href = '/';
+      window.location.href = '/login';
     }
-    return Promise.reject(error);
+    return Promise.reject(error.response.data);
   }
 );

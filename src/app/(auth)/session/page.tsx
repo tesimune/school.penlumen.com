@@ -33,6 +33,7 @@ import {
   Plus,
 } from 'lucide-react';
 import IsLoading from '@/components/is-loading';
+import { toast } from 'sonner';
 
 interface BranchAccess {
   uuid: string;
@@ -65,26 +66,27 @@ export default function BranchSelectionPage() {
     address: '',
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const userString = Cookies.get('user');
-      const user = userString ? JSON.parse(userString) : null;
-      if (!user) {
-        router.push('/login');
-        return;
-      }
+  const fetchData = async () => {
+    const userString = Cookies.get('user');
+    const user = userString ? JSON.parse(userString) : null;
+    if (!user) {
+      router.push('/login');
+      return;
+    }
 
-      const response = await index();
-      if (!response.success) {
-        console.error(response.message);
-      } else {
-        setBranches(response.data.branch_acccess);
-      }
-    };
+    const response = await index();
+    if (!response.success) {
+      console.error(response.message);
+    } else {
+      setBranches(response.data.branch_acccess);
+    }
+  };
+
+  useEffect(() => {
     if (!branches.length) {
       fetchData();
     }
-  }, [router, index]);
+  }, [router]);
 
   const handleContinue = () => {
     if (selectedBranch === null) return;
@@ -94,7 +96,7 @@ export default function BranchSelectionPage() {
       const userString = Cookies.get('user');
       const user = userString ? JSON.parse(userString) : null;
 
-      if (user.data?.role === 'parent') {
+      if (user?.role === 'PARENT') {
         router.push('/parent/dashboard');
       } else {
         router.push('/staff/dashboard');
@@ -109,15 +111,26 @@ export default function BranchSelectionPage() {
   };
 
   const createBranch = async () => {
-    setIsCreating(true);
-    const response = await create(formData);
-    if (response.success) {
-      console.log(response);
-      router.push('/session');
-    } else {
-      console.log(response);
+    try {
+      setIsCreating(true);
+      const response = await create(formData);
+      if (response.success) {
+        setFormData({
+          name: '',
+          email: '',
+          contact: '',
+          address: '',
+        });
+        fetchData();
+        setShowCreateModal(false);
+      } else {
+        toast(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast(error.message || 'Something went wrong');
+    } finally {
+      setIsCreating(false);
     }
-    setIsCreating(false);
   };
 
   const filteredBranches = branches.filter(
