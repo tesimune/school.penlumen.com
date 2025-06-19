@@ -145,7 +145,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Settings className='mr-2 h-4 w-4' />
-                    <span>Settings</span>
+                    <span>Preference</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => logoutAccount()}>
