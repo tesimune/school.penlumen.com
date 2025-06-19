@@ -1,4 +1,4 @@
-import { axiosInstance } from "@/lib/axios";
+import { axiosInstance } from '@/lib/axios';
 
 type LoginResponse = {
   status: number;
@@ -16,7 +16,7 @@ type LoginResponse = {
   };
 };
 
-type Role = "root" | "admin" | "staff" | "parent";
+type Role = 'root' | 'admin' | 'staff' | 'parent';
 
 export const useAuth = () => {
   /**
@@ -33,7 +33,7 @@ export const useAuth = () => {
     email: string;
     password: string;
   }) => {
-    const response = await axiosInstance.post("/api/v1/login", {
+    const response = await axiosInstance.post('/api/v1/login', {
       role,
       email,
       password,
@@ -44,12 +44,12 @@ export const useAuth = () => {
     if (!data.success || !data.data) {
       return {
         success: false,
-        message: data.message || "Something went wrong",
+        message: data.message || 'Something went wrong',
       };
     } else {
       return {
         success: true,
-        message: data.message || "Login successful",
+        message: data.message || 'Login successful',
         data: {
           token: data.data.token,
           user: data.data.user,

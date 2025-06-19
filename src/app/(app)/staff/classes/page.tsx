@@ -2,14 +2,15 @@
 
 import type React from 'react';
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { useClass } from '@/hooks/class';
+import { useUser } from '@/hooks/user';
 import {
   Download,
   MenuSquareIcon,
   Plus,
   Search,
-  Users,
   GraduationCap,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -55,128 +56,107 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { toast } from 'sonner';
+import IsLoading from '@/components/is-loading';
+
+interface Class {
+  uuid: string;
+  name: string;
+  email: string;
+  status: string;
+  capacity: number;
+  studentCount: number;
+  teacher_uuid: string;
+}
+
+interface User {
+  uuid: string;
+  name: string;
+}
+
+interface Teacher {
+  user: User;
+}
 
 export default function ClassesPage() {
+  const { index: userIndex } = useUser();
+  const { index: classIndex, create } = useClass();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [teachers, setTeacher] = useState<Teacher[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     capacity: 0,
     teacher_uuid: '',
   });
 
-  const teachers = [
-    { uuid: 'teacher-1', name: 'Mrs Aisha' },
-    { uuid: 'teacher-2', name: 'Mr Ibrahim' },
-    { uuid: 'teacher-3', name: 'Suleiman Ibn' },
-    { uuid: 'teacher-4', name: 'Mrs Khadijah' },
-  ];
-
-  const classes = [
-    {
-      uuid: 'class-1',
-      name: 'Class 1A',
-      teacher_uuid: 'teacher-1',
-      studentCount: 30,
-      capacity: 30,
-      status: 'active',
-      schedule: 'Morning',
-    },
-    {
-      uuid: 'class-2',
-      name: 'Class 1B',
-      teacher_uuid: 'teacher-1',
-      studentCount: 25,
-      capacity: 30,
-      status: 'active',
-      schedule: 'Morning',
-    },
-    {
-      uuid: 'class-3',
-      name: 'Class 2A',
-      teacher_uuid: 'teacher-1',
-      studentCount: 30,
-      capacity: 30,
-      status: 'active',
-      schedule: 'Afternoon',
-    },
-    {
-      uuid: 'class-4',
-      name: 'Class 2B',
-      teacher_uuid: 'teacher-2',
-      studentCount: 22,
-      capacity: 30,
-      status: 'active',
-      schedule: 'Morning',
-    },
-    {
-      uuid: 'class-5',
-      name: 'Class 3A',
-      teacher_uuid: 'teacher-2',
-      studentCount: 30,
-      capacity: 30,
-      status: 'active',
-      schedule: 'Afternoon',
-    },
-    {
-      uuid: 'class-7',
-      name: 'Class 3B',
-      teacher_uuid: 'teacher-3',
-      studentCount: 27,
-      capacity: 30,
-      status: 'active',
-      schedule: 'Morning',
-    },
-    {
-      uuid: 'class-8',
-      name: 'Class 4A',
-      teacher_uuid: 'teacher-4',
-      studentCount: 24,
-      capacity: 30,
-      status: 'active',
-      schedule: 'Afternoon',
-    },
-    {
-      uuid: 'class-6',
-      name: 'Class 2020',
-      teacher_uuid: 'teacher-3',
-      studentCount: 29,
-      capacity: 30,
-      status: 'inactive',
-      schedule: 'Morning',
-    },
-  ];
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle form submission here
-    console.log('New class data:', formData);
-
-    // Reset form and close modal
-    setFormData({
-      name: '',
-      capacity: 0,
-      teacher_uuid: '',
-    });
-    setIsAddDialogOpen(false);
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const resClass = await classIndex();
+      const resUser = await userIndex('staff');
+      if (resClass.success && resUser) {
+        setClasses(resClass.data.classes);
+        setTeacher(resUser.data.user);
+      } else {
+        toast(resClass.message || 'Something went wrong');
+        toast(resUser.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast(error.message || 'Something went wront');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Filter classes based on search query
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    setIsLoading(true);
+    e.preventDefault();
+    try {
+      const response = await create(formData);
+      if (response.success) {
+        fetchData();
+        setFormData({
+          name: '',
+          capacity: 0,
+          teacher_uuid: '',
+        });
+      } else {
+        toast(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast(error.message || 'Something went wrong');
+    } finally {
+      setIsAddDialogOpen(false);
+      setIsLoading(false);
+    }
+  };
+
   const filteredClasses = classes.filter(
     (classItem) =>
       classItem.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       teachers
-        .find((t) => t.uuid === classItem.teacher_uuid)
-        ?.name.toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      classItem.schedule.toLowerCase().includes(searchQuery.toLowerCase())
+        .find((t) => t.user.uuid === classItem.teacher_uuid)
+        ?.user?.name.toLowerCase()
+        .includes(searchQuery.toLowerCase())
   );
 
-  // Get teacher name by uuid
   const getTeacherName = (teacher_uuid: string) => {
-    const teacher = teachers.find((teacher) => teacher.uuid === teacher_uuid);
-    return teacher ? teacher.name : '';
+    const teacher = teachers.find(
+      (teacher) => teacher.user.uuid === teacher_uuid
+    );
+    return teacher ? teacher.user.name : '';
   };
+
+  if (isLoading) {
+    return <IsLoading />;
+  }
 
   return (
     <div className='space-y-6'>
@@ -243,9 +223,12 @@ export default function ClassesPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {teachers.map((teacher) => (
-                        <SelectItem key={teacher.uuid} value={teacher.uuid}>
+                        <SelectItem
+                          key={teacher.user.uuid}
+                          value={teacher.user.uuid}
+                        >
                           <div className='flex flex-col'>
-                            <span>{teacher.name}</span>
+                            <span>{teacher.user.name}</span>
                           </div>
                         </SelectItem>
                       ))}
