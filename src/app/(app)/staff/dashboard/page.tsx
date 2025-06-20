@@ -9,10 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEffect, useState } from 'react';
 import { useDashboard } from '@/hooks/dashboard';
 import IsLoading from '@/components/is-loading';
+import { toast } from 'sonner';
 // import Overview from '@/components/dashboard/overview';
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { cards } = useDashboard();
   const [card, setCard] = useState({
     total_students: 0,
@@ -21,14 +22,23 @@ export default function DashboardPage() {
     total_classes: 0,
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
       const response = await cards();
       if (response.success) {
         setCard(response.data);
+      } else {
+        toast(response.message || 'Something went wrong');
       }
+    } catch (error: any) {
+      toast(error.message || 'Something went wrong');
+    } finally {
       setIsLoading(false);
-    };
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 

@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useUser } from '@/hooks/user';
+import { useClass } from '@/hooks/class';
+import { useStudent } from '@/hooks/student';
 import { Download, MenuSquareIcon, Plus, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -47,112 +50,77 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Upload, UserPlus, X } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
+import { toast } from 'sonner';
+import IsLoading from '@/components/is-loading';
 
-interface AddStudentModalProps {
-  branches?: { uuid: string; name: string }[];
-  classes?: { uuid: string; name: string; branch_uuid: string }[];
-  parents?: { uuid: string; name: string; email: string }[];
+interface User {
+  uuid: string;
+  name: string;
+  email: string;
+}
+
+interface Parent {
+  user: User;
+}
+
+interface Class {
+  uuid: string;
+  name: string;
+}
+
+interface Student {
+  uuid: string;
+  name: string;
+  status: string;
+  parent: Parent;
+  class: Class;
 }
 
 export default function StudentsPage() {
+  const { index: userIndex } = useUser();
+  const { index: classIndex } = useClass();
+  const { index: studentIndex, create } = useStudent();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [parents, setParents] = useState<Parent[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     avatar: '',
     reg_number: '',
     class_uuid: '',
-    branch_uuid: '',
     parent_uuid: '',
   });
 
-  const branches = [
-    { uuid: 'branch-1', name: 'Main Campus' },
-    { uuid: 'branch-2', name: 'North Branch' },
-    { uuid: 'branch-3', name: 'South Branch' },
-  ];
-  const classes = [
-    { uuid: 'class-1', name: 'Grade 1A', branch_uuid: 'branch-1' },
-    { uuid: 'class-2', name: 'Grade 1B', branch_uuid: 'branch-1' },
-    { uuid: 'class-3', name: 'Grade 2A', branch_uuid: 'branch-1' },
-    { uuid: 'class-4', name: 'Grade 1A', branch_uuid: 'branch-2' },
-  ];
-  const parents = [
-    { uuid: 'parent-1', name: 'John Smith', email: 'john@example.com' },
-    { uuid: 'parent-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
-    { uuid: 'parent-3', name: 'Michael Brown', email: 'michael@example.com' },
-  ];
-  const students = [
-    {
-      id: 1,
-      name: 'Alice Johnson',
-      grade: '10th',
-      section: 'A',
-      status: 'active',
-      email: 'alice@example.com',
-    },
-    {
-      id: 2,
-      name: 'Bob Smith',
-      grade: '9th',
-      section: 'B',
-      status: 'active',
-      email: 'bob@example.com',
-    },
-    {
-      id: 3,
-      name: 'Charlie Brown',
-      grade: '11th',
-      section: 'A',
-      status: 'inactive',
-      email: 'charlie@example.com',
-    },
-    {
-      id: 4,
-      name: 'Diana Prince',
-      grade: '12th',
-      section: 'C',
-      status: 'active',
-      email: 'diana@example.com',
-    },
-    {
-      id: 5,
-      name: 'Edward Cullen',
-      grade: '10th',
-      section: 'B',
-      status: 'active',
-      email: 'edward@example.com',
-    },
-    {
-      id: 6,
-      name: 'Fiona Gallagher',
-      grade: '9th',
-      section: 'A',
-      status: 'active',
-      email: 'fiona@example.com',
-    },
-    {
-      id: 7,
-      name: 'George Weasley',
-      grade: '11th',
-      section: 'C',
-      status: 'inactive',
-      email: 'george@example.com',
-    },
-    {
-      id: 8,
-      name: 'Hermione Granger',
-      grade: '12th',
-      section: 'A',
-      status: 'active',
-      email: 'hermione@example.com',
-    },
-  ];
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const resClass = await classIndex();
+      const resStudent = await studentIndex();
+      const resUser = await userIndex('parent');
 
-  const filteredClasses = classes.filter(
-    (cls) => cls.branch_uuid === formData.branch_uuid
-  );
+      if (resUser && resClass.success && resStudent) {
+        setParents(resUser.data.user);
+        setClasses(resClass.data.classes);
+        setStudents(resStudent.data.students);
+      } else {
+        toast(resClass.message || 'Something went wrong');
+        toast(resUser.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      console.log(error);
+      toast(error.message || 'Something went wront');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -165,34 +133,44 @@ export default function StudentsPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log(formData);
-
-    setFormData({
-      name: '',
-      avatar: '',
-      reg_number: '',
-      class_uuid: '',
-      branch_uuid: '',
-      parent_uuid: '',
-    });
-    setIsAddDialogOpen(false);
+    setIsLoading(true);
+    try {
+      const response = await create(formData);
+      if (response.success) {
+        fetchData();
+        setIsAddDialogOpen(false);
+        setFormData({
+          name: '',
+          avatar: '',
+          reg_number: '',
+          class_uuid: '',
+          parent_uuid: '',
+        });
+      } else {
+        toast(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast(error.message || 'Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const removeAvatar = () => {
     setFormData({ ...formData, avatar: '' });
   };
 
-  // Filter students based on search query
   const filteredStudents = students.filter(
     (student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.grade.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.section.toLowerCase().includes(searchQuery.toLowerCase())
+      student.class.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (isLoading) {
+    return <IsLoading />;
+  }
 
   return (
     <div className='space-y-6'>
@@ -313,40 +291,16 @@ export default function StudentsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {parents.map((parent) => (
-                        <SelectItem key={parent.uuid} value={parent.uuid}>
+                        <SelectItem
+                          key={parent.user.uuid}
+                          value={parent.user.uuid}
+                        >
                           <div className='flex flex-col'>
-                            <span>{parent.name}</span>
+                            <span>{parent.user.name}</span>
                             <span className='text-xs text-muted-foreground'>
-                              {parent.email}
+                              {parent.user.email}
                             </span>
                           </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Branch Selection */}
-                <div className='space-y-2'>
-                  <Label htmlFor='branch'>Branch *</Label>
-                  <Select
-                    value={formData.branch_uuid}
-                    onValueChange={(value) => {
-                      setFormData({
-                        ...formData,
-                        branch_uuid: value,
-                        class_uuid: '',
-                      });
-                    }}
-                    required
-                  >
-                    <SelectTrigger className='w-full'>
-                      <SelectValue placeholder='Select branch' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {branches.map((branch) => (
-                        <SelectItem key={branch.uuid} value={branch.uuid}>
-                          {branch.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -364,7 +318,6 @@ export default function StudentsPage() {
                         class_uuid: value,
                       });
                     }}
-                    disabled={!formData.branch_uuid}
                     required
                   >
                     <SelectTrigger className='w-full'>
@@ -377,7 +330,7 @@ export default function StudentsPage() {
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {filteredClasses.map((cls) => (
+                      {classes.map((cls) => (
                         <SelectItem key={cls.uuid} value={cls.uuid}>
                           {cls.name}
                         </SelectItem>
@@ -387,48 +340,37 @@ export default function StudentsPage() {
                 </div>
 
                 {/* Summary Card */}
-                {formData.name &&
-                  formData.branch_uuid &&
-                  formData.class_uuid && (
-                    <Card className='bg-muted/50'>
-                      <CardContent className='pt-4'>
-                        <div className='text-sm space-y-1'>
-                          <p>
-                            <span className='font-medium'>Student:</span>{' '}
-                            {formData.name}
-                          </p>
-                          <p>
-                            <span className='font-medium'>Registration:</span>{' '}
-                            {formData.reg_number}
-                          </p>
-                          <p>
-                            <span className='font-medium'>Branch:</span>{' '}
-                            {
-                              branches.find(
-                                (b) => b.uuid === formData.branch_uuid
-                              )?.name
-                            }
-                          </p>
-                          <p>
-                            <span className='font-medium'>Class:</span>{' '}
-                            {
-                              classes.find(
-                                (c) => c.uuid === formData.class_uuid
-                              )?.name
-                            }
-                          </p>
-                          <p>
-                            <span className='font-medium'>Parent:</span>{' '}
-                            {
-                              parents.find(
-                                (p) => p.uuid === formData.parent_uuid
-                              )?.name
-                            }
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
+                {formData.name && formData.class_uuid && (
+                  <Card className='bg-muted/50'>
+                    <CardContent className='pt-4'>
+                      <div className='text-sm space-y-1'>
+                        <p>
+                          <span className='font-medium'>Student:</span>{' '}
+                          {formData.name}
+                        </p>
+                        <p>
+                          <span className='font-medium'>Registration:</span>{' '}
+                          {formData.reg_number}
+                        </p>
+                        <p>
+                          <span className='font-medium'>Class:</span>{' '}
+                          {
+                            classes.find((c) => c.uuid === formData.class_uuid)
+                              ?.name
+                          }
+                        </p>
+                        <p>
+                          <span className='font-medium'>Parent:</span>{' '}
+                          {
+                            parents.find(
+                              (p) => p.user.uuid === formData.parent_uuid
+                            )?.user.name
+                          }
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 <DialogFooter className='gap-2'>
                   <Button
@@ -444,7 +386,6 @@ export default function StudentsPage() {
                       !formData.name ||
                       !formData.reg_number ||
                       !formData.parent_uuid ||
-                      !formData.branch_uuid ||
                       !formData.class_uuid
                     }
                   >
@@ -499,7 +440,7 @@ export default function StudentsPage() {
                   </TableRow>
                 ) : (
                   filteredStudents.map((student) => (
-                    <TableRow key={student.id}>
+                    <TableRow key={student.uuid}>
                       <TableCell className='font-medium'>
                         <div className='flex items-center gap-2'>
                           <Avatar className='h-8 w-8'>
@@ -515,7 +456,7 @@ export default function StudentsPage() {
                           {student.name}
                         </div>
                       </TableCell>
-                      <TableCell>{student.grade}</TableCell>
+                      <TableCell>{student.class.name}</TableCell>
                       <TableCell>
                         <Badge
                           variant={

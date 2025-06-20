@@ -133,10 +133,8 @@ export default function BranchSelectionPage() {
     }
   };
 
-  const filteredBranches = branches.filter(
-    (access) =>
-      access.branch.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      access.branch.address.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredBranches = branches.filter((access) =>
+    access.branch.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const container = {

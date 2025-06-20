@@ -116,8 +116,8 @@ export default function ClassesPage() {
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    setIsLoading(true);
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await create(formData);
       if (response.success) {

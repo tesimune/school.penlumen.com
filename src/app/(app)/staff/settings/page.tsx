@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useGrade } from '@/hooks/grade';
 import { Award, Download, MenuSquareIcon, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -40,64 +41,75 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import IsLoading from '@/components/is-loading';
+import { toast } from 'sonner';
+
+interface Grade {
+  uuid: string;
+  score: number;
+  grade: string;
+  remark: string;
+  description: string;
+  created_at: string;
+}
 
 export default function GradesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [grades, setGrades] = useState<Grade[]>([]);
+  const { index, create } = useGrade();
 
-  // Mock grade data
-  const grades = [
-    {
-      id: 1,
-      uuid: 'grade-uuid-1',
-      score: 90,
-      grade: 'A',
-      remark: 'Excellent',
-      created_at: '2023-01-15',
-    },
-    {
-      id: 2,
-      uuid: 'grade-uuid-2',
-      score: 80,
-      grade: 'B',
-      remark: 'Very Good',
-      created_at: '2023-01-16',
-    },
-    {
-      id: 3,
-      uuid: 'grade-uuid-3',
-      score: 70,
-      grade: 'C',
-      remark: 'Good',
-      created_at: '2023-01-17',
-    },
-    {
-      id: 4,
-      uuid: 'grade-uuid-4',
-      score: 60,
-      grade: 'D',
-      remark: 'Fair',
-      created_at: '2023-01-18',
-    },
-    {
-      id: 5,
-      uuid: 'grade-uuid-5',
-      score: 50,
-      grade: 'E',
-      remark: 'Pass',
-      created_at: '2023-01-19',
-    },
-    {
-      id: 6,
-      uuid: 'grade-uuid-6',
-      score: 40,
-      grade: 'F',
-      remark: 'Fail',
-      created_at: '2023-01-20',
-    },
-  ];
+  const [formData, setFormData] = useState({
+    score: 0,
+    grade: '',
+    remark: '',
+    description: '',
+  });
 
-  // Filter grades based on search query
+  const fetchData = async () => {
+    setIsLoading(true);
+    const response = await index();
+    try {
+      if (response.success) {
+        setGrades(response.data.grades);
+      } else {
+        toast(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast(error.message || 'Something went wrong');
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await create(formData);
+      if (response.success) {
+        setFormData({
+          score: 0,
+          grade: '',
+          remark: '',
+          description: '',
+        });
+        setIsAddDialogOpen(false);
+        fetchData();
+      } else {
+        toast(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast(error.message || 'Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const filteredGrades = grades.filter(
     (grade) =>
       grade.grade.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -105,7 +117,6 @@ export default function GradesPage() {
       grade.score.toString().includes(searchQuery)
   );
 
-  // Function to get badge color based on grade
   const getBadgeVariant = (grade: string) => {
     switch (grade) {
       case 'A':
@@ -124,6 +135,10 @@ export default function GradesPage() {
         return 'outline';
     }
   };
+
+  if (isLoading) {
+    return <IsLoading />;
+  }
 
   return (
     <div className='space-y-6'>
@@ -153,7 +168,7 @@ export default function GradesPage() {
                   Create a new grade criteria for student assessment
                 </DialogDescription>
               </DialogHeader>
-              <form className='space-y-4 py-4'>
+              <form onSubmit={handleSubmit} className='space-y-4 py-4'>
                 <div className='grid grid-cols-2 gap-4'>
                   <div className='space-y-2'>
                     <Label htmlFor='min-score'>Minimum Score</Label>
@@ -161,22 +176,47 @@ export default function GradesPage() {
                       id='min-score'
                       type='number'
                       placeholder='e.g., 80'
+                      value={formData.score}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          score: Number(e.target.value),
+                        })
+                      }
                     />
                   </div>
                   <div className='space-y-2'>
                     <Label htmlFor='grade'>Grade</Label>
-                    <Input id='grade' placeholder='e.g., A' />
+                    <Input
+                      id='grade'
+                      placeholder='e.g., A'
+                      value={formData.grade}
+                      onChange={(e) =>
+                        setFormData({ ...formData, grade: e.target.value })
+                      }
+                    />
                   </div>
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='remark'>Remark</Label>
-                  <Input id='remark' placeholder='e.g., Excellent' />
+                  <Input
+                    id='remark'
+                    placeholder='e.g., Excellent'
+                    value={formData.remark}
+                    onChange={(e) =>
+                      setFormData({ ...formData, remark: e.target.value })
+                    }
+                  />
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='description'>Description (Optional)</Label>
                   <Textarea
                     id='description'
                     placeholder='Additional details about this grade'
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                   />
                 </div>
                 <DialogFooter>
@@ -238,7 +278,7 @@ export default function GradesPage() {
                   </TableRow>
                 ) : (
                   filteredGrades.map((grade) => (
-                    <TableRow key={grade.id}>
+                    <TableRow key={grade.uuid}>
                       <TableCell className='font-medium'>
                         <div className='flex items-center gap-2'>
                           <Award className='h-4 w-4 text-primary' />

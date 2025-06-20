@@ -103,7 +103,8 @@ export default function parentPage() {
     }
   }, []);
 
-  const saveParent = async () => {
+  const saveParent = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
     try {
       const response = await create(formData);
@@ -188,7 +189,7 @@ export default function parentPage() {
                   Create a new parent account
                 </DialogDescription>
               </DialogHeader>
-              <form className='space-y-4 py-4'>
+              <form onSubmit={saveParent} className='space-y-4 py-4'>
                 <div className='space-y-2'>
                   <Label htmlFor='name'>Full Name</Label>
                   <Input
@@ -284,9 +285,7 @@ export default function parentPage() {
                   >
                     Cancel
                   </Button>
-                  <Button onClick={() => saveParent()} type='submit'>
-                    Save parent
-                  </Button>
+                  <Button type='submit'>Save parent</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -355,7 +354,10 @@ export default function parentPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getBadgeVariant(parent.user.position)}>
+                        <Badge
+                          className='capitalize'
+                          variant={getBadgeVariant(parent.user.position)}
+                        >
                           {parent.user.position}
                         </Badge>
                       </TableCell>

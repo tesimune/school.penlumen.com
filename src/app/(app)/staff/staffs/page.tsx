@@ -103,7 +103,8 @@ export default function StaffPage() {
     }
   }, []);
 
-  const saveStaff = async () => {
+  const saveStaff = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
     try {
       const response = await create(formData);
@@ -149,14 +150,14 @@ export default function StaffPage() {
 
   const getBadgeVariant = (position: string) => {
     switch (position?.toLowerCase()) {
+      case 'administrator':
+        return 'default';
       case 'principal':
         return 'default';
       case 'vice principal':
         return 'secondary';
       case 'teacher':
         return 'outline';
-      case 'administrator':
-        return 'secondary';
       default:
         return 'outline';
     }
@@ -194,7 +195,7 @@ export default function StaffPage() {
                   Create a new staff account
                 </DialogDescription>
               </DialogHeader>
-              <form className='space-y-4 py-4'>
+              <form onSubmit={saveStaff} className='space-y-4 py-4'>
                 <div className='space-y-2'>
                   <Label htmlFor='name'>Full Name</Label>
                   <Input
@@ -289,15 +290,13 @@ export default function StaffPage() {
                 </div>
                 <DialogFooter>
                   <Button
+                    onClick={() => setIsAddDialogOpen(false)}
                     type='button'
                     variant='outline'
-                    onClick={() => setIsAddDialogOpen(false)}
                   >
                     Cancel
                   </Button>
-                  <Button onClick={() => saveStaff()} type='submit'>
-                    Save Staff
-                  </Button>
+                  <Button type='submit'>Save Staff</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -366,7 +365,10 @@ export default function StaffPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getBadgeVariant(staff.user.position)}>
+                        <Badge
+                          className='capitalize'
+                          variant={getBadgeVariant(staff.user.position)}
+                        >
                           {staff.user.position}
                         </Badge>
                       </TableCell>
