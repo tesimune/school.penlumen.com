@@ -20,9 +20,16 @@ export const useUser = () => {
     }
   };
 
-  const create = async (user_uuid: string) => {
+  const create = async (userData: any) => {
     const response = await axiosInstance.post('/api/v1/user/create', {
-      user_uuid,
+      name: userData.name,
+      email: userData.email,
+      password: userData.password,
+      contact: userData.contact,
+      alt_contact: userData.alt_contact,
+      position: userData.position,
+      address: userData.address,
+      role: userData.role,
     });
     const data = response.data;
 
@@ -30,6 +37,7 @@ export const useUser = () => {
       return {
         success: false,
         message: data.message || 'Something went wrong',
+        data: data.data,
       };
     } else {
       return {
@@ -39,8 +47,8 @@ export const useUser = () => {
     }
   };
 
-  const register = async (userData: any) => {
-    const response = await axiosInstance.post('/api/v1/register', {
+  const update = async (userData: any) => {
+    const response = await axiosInstance.put('/api/v1/user/update', {
       name: userData.name,
       email: userData.email,
       password: userData.password,
@@ -69,6 +77,6 @@ export const useUser = () => {
   return {
     index,
     create,
-    register,
+    update,
   };
 };

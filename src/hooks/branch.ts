@@ -40,8 +40,28 @@ export const useBranch = () => {
     }
   };
 
+  const createAccess = async (user_uuid: string) => {
+    const response = await axiosInstance.post('/branch/create/access', {
+      user_uuid,
+    });
+    const data = response.data;
+
+    if (!data.success || !data.data) {
+      return {
+        success: false,
+        message: data.message || 'Something went wrong',
+      };
+    } else {
+      return {
+        success: true,
+        data: data.data,
+      };
+    }
+  };
+
   return {
     index,
     create,
+    createAccess,
   };
 };

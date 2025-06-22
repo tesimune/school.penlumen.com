@@ -40,7 +40,7 @@ export default function UserUpdate({
   isAddDialogOpen: boolean;
   setIsAddDialogOpen: (open: boolean) => void;
 }) {
-  const { create, register } = useUser();
+  const { update } = useUser();
   const [positions, setPositions] = useState<string[]>([]);
 
   useEffect(() => {
@@ -60,38 +60,11 @@ export default function UserUpdate({
     }
   }, [role]);
 
-  const addToBranch = async (uuid: string) => {
-    setIsLoading(true);
-    try {
-      const response = await create(uuid);
-      if (response.success) {
-        setFormData({
-          name: '',
-          email: '',
-          password: '',
-          contact: '',
-          alt_contact: '',
-          position: '',
-          address: '',
-          role,
-        });
-        setIsAddDialogOpen(false);
-        fetchData();
-      } else {
-        toast(response.message || 'Something went wrong', {});
-      }
-    } catch (error: any) {
-      toast(error.message || 'Something went wrong');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const saveUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await register(formData);
+      const response = await update(formData);
 
       if (response.success) {
         setFormData({
@@ -107,12 +80,7 @@ export default function UserUpdate({
         fetchData();
         setIsAddDialogOpen(false);
       } else {
-        toast(response.message || 'Something went wrong', {
-          action: {
-            label: 'Add to branch',
-            onClick: () => addToBranch(response.data.user_uuid),
-          },
-        });
+        toast(response.message || 'Something went wrong');
       }
     } catch (error: any) {
       toast(error.message || 'Something went wrong');

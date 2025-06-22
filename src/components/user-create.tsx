@@ -1,6 +1,7 @@
 'use client';
 import { toast } from 'sonner';
 import { useUser } from '@/hooks/user';
+import { useBranch } from '@/hooks/branch';
 import React, { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import {
@@ -32,7 +33,8 @@ export default function UserCreate({
   fetchData: () => void;
   setIsLoading: (loading: boolean) => void;
 }) {
-  const { create, register } = useUser();
+  const { create } = useUser();
+  const { createAccess } = useBranch();
   const [positions, setPositions] = useState<string[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -66,7 +68,7 @@ export default function UserCreate({
   const addToBranch = async (uuid: string) => {
     setIsLoading(true);
     try {
-      const response = await create(uuid);
+      const response = await createAccess(uuid);
       if (response.success) {
         setFormData({
           name: '',
@@ -94,7 +96,7 @@ export default function UserCreate({
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await register(formData);
+      const response = await create(formData);
 
       if (response.success) {
         setFormData({
