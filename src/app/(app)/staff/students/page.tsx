@@ -404,17 +404,11 @@ export default function StudentsPage() {
         transition={{ duration: 0.5 }}
       >
         <Card>
-          <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-            <div>
-              <CardTitle>All Students</CardTitle>
-              <CardDescription>
-                A list of all students with their details
-              </CardDescription>
-            </div>
-            <div className='relative w-full sm:w-64'>
+          <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center'>
+            <div className='relative w-full'>
               <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
               <Input
-                placeholder='Search students...'
+                placeholder='Search student...'
                 className='pl-8'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -478,11 +472,8 @@ export default function StudentsPage() {
                           <DropdownMenuContent align='end'>
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
+                            <DropdownMenuItem>Show Student</DropdownMenuItem>
                             <DropdownMenuItem>Edit Student</DropdownMenuItem>
-                            <DropdownMenuItem>
-                              Attendance Record
-                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className='text-destructive'>
                               Delete Student

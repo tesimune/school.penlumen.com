@@ -54,12 +54,12 @@ interface Grade {
 }
 
 export default function GradesPage() {
+  const { index, create } = useGrade();
+  const [grades, setGrades] = useState<Grade[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [grades, setGrades] = useState<Grade[]>([]);
-  const { index, create } = useGrade();
-
+  const [editUUID, setEditUUID] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     score: 0,
     grade: '',
@@ -86,30 +86,6 @@ export default function GradesPage() {
     fetchData();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const response = await create(formData);
-      if (response.success) {
-        setFormData({
-          score: 0,
-          grade: '',
-          remark: '',
-          description: '',
-        });
-        setIsAddDialogOpen(false);
-        fetchData();
-      } else {
-        toast(response.message || 'Something went wrong');
-      }
-    } catch (error: any) {
-      toast(error.message || 'Something went wrong');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const filteredGrades = grades.filter(
     (grade) =>
       grade.grade.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -134,6 +110,50 @@ export default function GradesPage() {
       default:
         return 'outline';
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      let response: any = { success: false, message: '', data: null };
+      if (editUUID) {
+        // response = await update(editUUID, formData);
+      } else {
+        response = await create(formData);
+      }
+      if (response.success) {
+        setFormData({
+          score: 0,
+          grade: '',
+          remark: '',
+          description: '',
+        });
+        setIsAddDialogOpen(false);
+        fetchData();
+      } else {
+        toast(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast(error.message || 'Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEdit = async (grade: Grade) => {
+    setFormData({
+      score: grade.score,
+      grade: grade.grade,
+      remark: grade.remark,
+      description: grade.description,
+    });
+    setEditUUID(grade.uuid);
+    setIsAddDialogOpen(true);
+  };
+
+  const handleDelete = async (uuid: string) => {
+    console.log(`Delete grade with UUID: ${uuid}`);
   };
 
   if (isLoading) {
@@ -241,17 +261,11 @@ export default function GradesPage() {
         transition={{ duration: 0.5 }}
       >
         <Card>
-          <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-            <div>
-              <CardTitle>Grade Criteria</CardTitle>
-              <CardDescription>
-                Grading system used for student assessment
-              </CardDescription>
-            </div>
-            <div className='relative w-full sm:w-64'>
+          <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center'>
+            <div className='relative w-full'>
               <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
               <Input
-                placeholder='Search grades...'
+                placeholder={`Search grades...`}
                 className='pl-8'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -300,9 +314,14 @@ export default function GradesPage() {
                           <DropdownMenuContent align='end'>
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>Edit Grade</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEdit(grade)}>
+                              Edit Grade
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className='text-destructive'>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(grade.uuid)}
+                              className='text-destructive'
+                            >
                               Delete Grade
                             </DropdownMenuItem>
                           </DropdownMenuContent>

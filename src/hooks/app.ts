@@ -1,7 +1,7 @@
 import { axiosInstance } from '@/lib/axios';
 
-export const useDashboard = () => {
-  const cards = async (): Promise<any> => {
+export const useApp = () => {
+  const dashboard = async (): Promise<any> => {
     const response = await axiosInstance.get('/api/v1/dashboard/cards');
     const data = response.data;
 
@@ -19,6 +19,6 @@ export const useDashboard = () => {
   };
 
   return {
-    cards,
+    dashboard,
   };
 };

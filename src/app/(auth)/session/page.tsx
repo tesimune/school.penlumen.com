@@ -4,7 +4,6 @@ import Cookies from 'js-cookie';
 import { motion } from 'framer-motion';
 import { useBranch } from '@/hooks/branch';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,7 +17,6 @@ import {
 } from '@/components/ui/card';
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -57,7 +55,6 @@ export default function BranchSelectionPage() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const { index, create } = useBranch();
-  const router = useRouter();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -70,13 +67,13 @@ export default function BranchSelectionPage() {
     const userString = Cookies.get('user');
     const user = userString ? JSON.parse(userString) : null;
     if (!user) {
-      router.push('/login');
+      window.location.href = '/login';
       return;
     }
 
     const response = await index();
     if (!response.success) {
-      console.error(response.message);
+      toast(response.message || 'Something went wrong');
     } else {
       setBranches(response.data.branch_acccess);
     }
@@ -86,28 +83,25 @@ export default function BranchSelectionPage() {
     if (!branches.length) {
       fetchData();
     }
-  }, [router]);
+  }, []);
 
   const handleContinue = () => {
     if (selectedBranch === null) return;
-    setIsLoading(true);
-    setTimeout(() => {
-      Cookies.set('branch', selectedBranch.toString(), { expires: 7 });
-      const userString = Cookies.get('user');
-      const user = userString ? JSON.parse(userString) : null;
+    const userString = Cookies.get('user');
+    const user = userString ? JSON.parse(userString) : null;
+    Cookies.set('branch', selectedBranch.toString(), { expires: 7 });
 
-      if (user?.role === 'PARENT') {
-        router.push('/parent/dashboard');
-      } else {
-        router.push('/staff/dashboard');
-      }
-    }, 1000);
+    if (user?.role === 'PARENT') {
+      window.location.href = '/parent/dashboard';
+    } else {
+      window.location.href = '/staff/dashboard';
+    }
   };
 
   const handleLogout = () => {
     Cookies.remove('user');
     Cookies.remove('branch');
-    router.push('/login');
+    window.location.href = '/login';
   };
 
   const createBranch = async () => {

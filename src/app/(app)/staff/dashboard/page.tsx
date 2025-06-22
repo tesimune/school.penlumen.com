@@ -7,14 +7,14 @@ import { BookOpen, GraduationCap, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEffect, useState } from 'react';
-import { useDashboard } from '@/hooks/dashboard';
 import IsLoading from '@/components/is-loading';
+import { useApp } from '@/hooks/app';
 import { toast } from 'sonner';
 // import Overview from '@/components/dashboard/overview';
 
 export default function DashboardPage() {
+  const { dashboard } = useApp();
   const [isLoading, setIsLoading] = useState(false);
-  const { cards } = useDashboard();
   const [card, setCard] = useState({
     total_students: 0,
     total_parents: 0,
@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await cards();
+      const response = await dashboard();
       if (response.success) {
         setCard(response.data);
       } else {

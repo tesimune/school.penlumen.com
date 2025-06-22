@@ -52,6 +52,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [profile, setProfile] = useState<UserProfile>();
+  const [menuItems, setMenuItems] = useState<any[]>([]);
 
   const terminateSession = () => {
     Cookies.remove('branch');
@@ -65,24 +66,39 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  useEffect(() => {
-    const userString = Cookies.get('user');
-    const user = userString ? JSON.parse(userString) : null;
-    if (user) {
-      setProfile(user);
-    }
-  }, [router]);
-
-  const menuItems = [
+  const staffMenuItems = [
     { title: 'Dashboard', icon: LayoutDashboard, href: '/staff/dashboard' },
     { title: 'parents', icon: Users, href: '/staff/parents' },
     { title: 'Staffs', icon: GraduationCap, href: '/staff/staffs' },
     { title: 'Classes', icon: BookOpen, href: '/staff/classes' },
     { title: 'Students', icon: Users, href: '/staff/students' },
     { title: 'Settings', icon: Settings, href: '/staff/settings' },
-    { title: 'Schedule', icon: Calendar, href: '/staff/schedule' },
     { title: 'Reports', icon: BarChart3, href: '/staff/reports' },
+    { title: 'Schedules', icon: Calendar, href: '/staff/schedules' },
   ];
+
+  const parentsMenuItems = [
+    { title: 'Dashboard', icon: LayoutDashboard, href: '/parents/dashboard' },
+    { title: 'My Children', icon: Users, href: '/parents/children' },
+  ];
+
+  useEffect(() => {
+    const userString = Cookies.get('user');
+    const user = userString ? JSON.parse(userString) : null;
+    if (user) {
+      setProfile(user);
+      if (user.role === 'parent') {
+        setMenuItems(parentsMenuItems);
+      } else {
+        setMenuItems(staffMenuItems);
+      }
+    } else {
+      Cookies.remove('user');
+      Cookies.remove('token');
+      Cookies.remove('branch');
+      router.push('/login');
+    }
+  }, [router]);
 
   return (
     <SidebarProvider>
@@ -142,10 +158,6 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
                   <DropdownMenuItem>
                     <User className='mr-2 h-4 w-4' />
                     <span>Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className='mr-2 h-4 w-4' />
-                    <span>Preference</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => logoutAccount()}>

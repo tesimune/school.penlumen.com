@@ -299,14 +299,8 @@ export default function ClassesPage() {
         transition={{ duration: 0.5 }}
       >
         <Card>
-          <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-            <div>
-              <CardTitle>All Classes ({filteredClasses.length})</CardTitle>
-              <CardDescription>
-                Manage classes across all branches
-              </CardDescription>
-            </div>
-            <div className='relative w-full sm:w-64'>
+          <CardHeader className='flex flex-col gap-4 sm:flex-row sm:items-center'>
+            <div className='relative w-full'>
               <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
               <Input
                 placeholder='Search classes...'
@@ -412,10 +406,8 @@ export default function ClassesPage() {
                           <DropdownMenuContent align='end'>
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
+                            <DropdownMenuItem>Show Class</DropdownMenuItem>
                             <DropdownMenuItem>Edit Class</DropdownMenuItem>
-                            <DropdownMenuItem>View Students</DropdownMenuItem>
-                            <DropdownMenuItem>Assign Teacher</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className='text-destructive'>
                               Delete Class
