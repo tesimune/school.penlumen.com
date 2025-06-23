@@ -59,9 +59,55 @@ export const useBranch = () => {
     }
   };
 
+  const update = async (uuid: string, branchData: any) => {
+    const response = await axiosInstance.patch(
+      `/api/v1/branch/update/${uuid}`,
+      {
+        name: branchData.name,
+        email: branchData.email,
+        contact: branchData.contact,
+        address: branchData.address,
+      }
+    );
+    const data = response.data;
+
+    if (!data.success || !data.data) {
+      return {
+        success: false,
+        message: data.message || 'Something went wrong',
+      };
+    } else {
+      return {
+        success: true,
+        data: data.data,
+      };
+    }
+  };
+
+  const remove = async (uuid: string) => {
+    const response = await axiosInstance.delete(
+      `/api/v1/branch/delete/${uuid}`
+    );
+    const data = response.data;
+
+    if (!data.success) {
+      return {
+        success: false,
+        message: data.message || 'Something went wrong',
+      };
+    } else {
+      return {
+        success: true,
+        data: data.data,
+      };
+    }
+  };
+
   return {
     index,
     create,
     createAccess,
+    update,
+    remove,
   };
 };

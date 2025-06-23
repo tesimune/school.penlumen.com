@@ -220,7 +220,13 @@ export default function UserCreate({
           </div>
           <div className='space-y-2'>
             <Label htmlFor='address'>Address</Label>
-            <Input id='address' placeholder='e.g., 123 Main St, City' />
+            <Input
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
+              id='address'
+              placeholder='e.g., 123 Main St, City'
+            />
           </div>
           <DialogFooter>
             <Button

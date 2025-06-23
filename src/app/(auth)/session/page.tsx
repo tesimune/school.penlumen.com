@@ -29,6 +29,8 @@ import {
   Search,
   LogOut,
   Plus,
+  Edit,
+  Trash,
 } from 'lucide-react';
 import IsLoading from '@/components/is-loading';
 import { toast } from 'sonner';
@@ -36,8 +38,9 @@ import { toast } from 'sonner';
 interface BranchAccess {
   uuid: string;
   name: string;
+  email: string;
   contact: string;
-  avata: string;
+  avatar: string;
   address: string;
   students: number;
 }
@@ -47,15 +50,14 @@ interface Branch {
 }
 
 export default function BranchSelectionPage() {
+  const { index, create, update, remove } = useBranch();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
-  const { index, create } = useBranch();
-
+  const [isSaving, setIsSavingisSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -85,49 +87,6 @@ export default function BranchSelectionPage() {
     }
   }, []);
 
-  const handleContinue = () => {
-    if (selectedBranch === null) return;
-    const userString = Cookies.get('user');
-    const user = userString ? JSON.parse(userString) : null;
-    Cookies.set('branch', selectedBranch.toString(), { expires: 7 });
-    toast.success('Branch selected successfully');
-
-    if (user?.role === 'PARENT') {
-      window.location.href = '/parent/dashboard';
-    } else {
-      window.location.href = '/staff/dashboard';
-    }
-  };
-
-  const handleLogout = () => {
-    Cookies.remove('user');
-    Cookies.remove('branch');
-    window.location.href = '/login';
-  };
-
-  const createBranch = async () => {
-    try {
-      setIsCreating(true);
-      const response = await create(formData);
-      if (response.success) {
-        setFormData({
-          name: '',
-          email: '',
-          contact: '',
-          address: '',
-        });
-        fetchData();
-        setShowCreateModal(false);
-      } else {
-        toast(response.message || 'Something went wrong');
-      }
-    } catch (error: any) {
-      toast(error.message || 'Something went wrong');
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
   const filteredBranches = branches.filter((access) =>
     access.branch.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -147,12 +106,179 @@ export default function BranchSelectionPage() {
     show: { opacity: 1, y: 0 },
   };
 
+  const handleContinue = () => {
+    if (selectedBranch === null) return;
+    const userString = Cookies.get('user');
+    const user = userString ? JSON.parse(userString) : null;
+    Cookies.set('branch', selectedBranch.toString(), { expires: 7 });
+    toast.success('Branch selected successfully');
+
+    if (user?.role === 'PARENT') {
+      window.location.href = '/parent/dashboard';
+    } else {
+      window.location.href = '/staff/dashboard';
+    }
+  };
+
+  const saveBranch = async () => {
+    try {
+      setIsSavingisSaving(true);
+      let response;
+      if (selectedBranch) {
+        response = await update(selectedBranch, formData);
+      } else {
+        response = await create(formData);
+      }
+      if (response.success) {
+        setFormData({
+          name: '',
+          email: '',
+          contact: '',
+          address: '',
+        });
+        fetchData();
+        setShowCreateModal(false);
+      } else {
+        toast(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast(error.message || 'Something went wrong');
+    } finally {
+      setIsSavingisSaving(false);
+    }
+  };
+
+  const handleEdit = (access: Branch) => {
+    setFormData({
+      name: access.branch.name,
+      email: access.branch.email,
+      contact: access.branch.contact,
+      address: access.branch.address,
+    });
+    setShowCreateModal(true);
+  };
+
+  const handleDelete = async (access: Branch) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete the branch "${access.branch.name}"? This action cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const response = await remove(access.branch.uuid);
+      if (response.success) {
+        toast.success('Branch deleted successfully');
+        fetchData();
+      } else {
+        toast.error(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReset = () => {
+    setFormData({
+      name: '',
+      email: '',
+      contact: '',
+      address: '',
+    });
+    setSelectedBranch(null);
+    setShowCreateModal(true);
+  };
+
+  const handleLogout = () => {
+    Cookies.remove('user');
+    Cookies.remove('branch');
+    window.location.href = '/login';
+  };
+
   if (isLoading) {
     return <IsLoading />;
   }
 
   return (
     <div className='flex min-h-screen items-center justify-center bg-muted p-4'>
+      {/* Create branch */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {selectedBranch ? 'Edit Branch' : 'Create New Branch'}
+            </DialogTitle>
+            <p className='text-muted-foreground text-sm'>
+              {selectedBranch
+                ? 'Update the details for this branch.'
+                : 'Enter the details for your new branch.'}
+            </p>
+          </DialogHeader>
+          <div className='grid gap-4 py-4'>
+            <Input
+              placeholder='Branch name *'
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+            />
+            <Input
+              placeholder='Contact'
+              value={formData.contact}
+              onChange={(e) =>
+                setFormData({ ...formData, contact: e.target.value })
+              }
+            />
+
+            <Input
+              placeholder='Address'
+              value={formData.address}
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
+            />
+          </div>
+          <DialogFooter className='flex justify-end gap-2'>
+            <Button
+              variant='outline'
+              onClick={() => setShowCreateModal(false)}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button onClick={() => saveBranch()} disabled={isSaving}>
+              {isSaving ? 'Saving...' : 'Save Branch'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 🔐 Logout Modal */}
+      <Dialog open={showLogoutModal} onOpenChange={setShowLogoutModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Logout</DialogTitle>
+            <p className='text-muted-foreground text-sm'>
+              Are you sure you want to logout? You’ll need to log in again to
+              continue.
+            </p>
+          </DialogHeader>
+          <DialogFooter className='mt-4 flex justify-end gap-2'>
+            <Button variant='outline' onClick={() => setShowLogoutModal(false)}>
+              Cancel
+            </Button>
+            <Button variant='destructive' onClick={handleLogout}>
+              Logout
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* <AnimatePresence> */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -170,11 +296,39 @@ export default function BranchSelectionPage() {
                 <Button
                   variant='outline'
                   size='icon'
-                  onClick={() => setShowCreateModal(true)}
+                  onClick={() => handleReset()}
                   title='Create Branch'
                 >
                   <Plus className='h-4 w-4' />
                 </Button>
+                {selectedBranch && (
+                  <Button
+                    variant='outline'
+                    size='icon'
+                    onClick={() =>
+                      handleEdit(
+                        branches.find((b) => b.branch.uuid === selectedBranch)!
+                      )
+                    }
+                    title='Edit Branch'
+                  >
+                    <Edit className='h-4 w-4' />
+                  </Button>
+                )}
+                {selectedBranch && (
+                  <Button
+                    variant='outline'
+                    size='icon'
+                    onClick={() =>
+                      handleDelete(
+                        branches.find((b) => b.branch.uuid === selectedBranch)!
+                      )
+                    }
+                    title='Delete Branch'
+                  >
+                    <Trash className='h-4 w-4' />
+                  </Button>
+                )}
 
                 <Button
                   variant='outline'
@@ -229,7 +383,7 @@ export default function BranchSelectionPage() {
                       <div className='flex items-center gap-4'>
                         <Avatar className='h-12 w-12'>
                           <AvatarImage
-                            src={access.branch.avata || '/placeholder.svg'}
+                            src={access.branch.avatar || '/placeholder.svg'}
                             alt={access.branch.name}
                           />
                           <AvatarFallback>
@@ -268,75 +422,6 @@ export default function BranchSelectionPage() {
           </CardFooter>
         </Card>
       </motion.div>
-
-      {/* Create branch */}
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Branch</DialogTitle>
-            <p className='text-muted-foreground text-sm'>
-              Enter the details for your new branch.
-            </p>
-          </DialogHeader>
-          <div className='grid gap-4 py-4'>
-            <Input
-              placeholder='Branch name *'
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-            />
-            <Input
-              placeholder='Contact'
-              value={formData.contact}
-              onChange={(e) =>
-                setFormData({ ...formData, contact: e.target.value })
-              }
-            />
-
-            <Input
-              placeholder='Address'
-              value={formData.address}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
-            />
-          </div>
-          <DialogFooter className='flex justify-end gap-2'>
-            <Button
-              variant='outline'
-              onClick={() => setShowCreateModal(false)}
-              disabled={isCreating}
-            >
-              Cancel
-            </Button>
-            <Button onClick={() => createBranch()} disabled={isCreating}>
-              {isCreating ? 'Creating...' : 'Create Branch'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 🔐 Logout Modal */}
-      <Dialog open={showLogoutModal} onOpenChange={setShowLogoutModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Logout</DialogTitle>
-            <p className='text-muted-foreground text-sm'>
-              Are you sure you want to logout? You’ll need to log in again to
-              continue.
-            </p>
-          </DialogHeader>
-          <DialogFooter className='mt-4 flex justify-end gap-2'>
-            <Button variant='outline' onClick={() => setShowLogoutModal(false)}>
-              Cancel
-            </Button>
-            <Button variant='destructive' onClick={handleLogout}>
-              Logout
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
