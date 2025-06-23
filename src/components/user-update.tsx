@@ -2,7 +2,6 @@
 import { toast } from 'sonner';
 import { useUser } from '@/hooks/user';
 import React, { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +24,7 @@ import { Button } from '@/components/ui/button';
 
 export default function UserUpdate({
   role,
+  editUUID,
   formData,
   setFormData,
   fetchData,
@@ -33,6 +33,7 @@ export default function UserUpdate({
   setIsAddDialogOpen,
 }: {
   role: string;
+  editUUID: string | null;
   formData: any;
   fetchData: () => void;
   setFormData: (data: any) => void;
@@ -45,14 +46,7 @@ export default function UserUpdate({
 
   useEffect(() => {
     if (role === 'staff') {
-      setPositions([
-        'principal',
-        'vice principal',
-        'teacher',
-        'administrator',
-        'counselor',
-        'librarian',
-      ]);
+      setPositions(['principal', 'vice principal', 'teacher']);
     } else if (role === 'parent') {
       setPositions(['parent', 'guardian']);
     } else {
@@ -64,8 +58,7 @@ export default function UserUpdate({
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await update(formData);
-
+      const response = await update(editUUID, formData);
       if (response.success) {
         setFormData({
           name: '',
@@ -80,10 +73,10 @@ export default function UserUpdate({
         fetchData();
         setIsAddDialogOpen(false);
       } else {
-        toast(response.message || 'Something went wrong');
+        toast.error(response.message || 'Something went wrong');
       }
     } catch (error: any) {
-      toast(error.message || 'Something went wrong');
+      toast.error(error.message || 'Something went wrong');
     } finally {
       fetchData();
     }
@@ -94,9 +87,9 @@ export default function UserUpdate({
       <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto scroll-hidden'>
         <DialogHeader>
           <DialogTitle>
-            Add New {role.charAt(0).toUpperCase() + role.slice(1)}
+            Update {role.charAt(0).toUpperCase() + role.slice(1)}
           </DialogTitle>
-          <DialogDescription>Create a new {role} account</DialogDescription>
+          <DialogDescription>Update {role} account</DialogDescription>
         </DialogHeader>
         <form onSubmit={saveUser} className='space-y-4 py-4'>
           <div className='space-y-2'>

@@ -40,8 +40,53 @@ export const useStudent = () => {
     }
   };
 
+  const update = async (uuid: string, studentData: any) => {
+    const response = await axiosInstance.patch(
+      `/api/v1/student/update/${uuid}`,
+      {
+        name: studentData.name,
+        reg_number: studentData.reg_number,
+        parent_uuid: studentData.parent_uuid,
+        class_uuid: studentData.class_uuid,
+      }
+    );
+    const data = response.data;
+
+    if (!data.success) {
+      return {
+        success: false,
+        message: data.message || 'Something went wrong',
+      };
+    } else {
+      return {
+        success: true,
+        data: data.data,
+      };
+    }
+  };
+
+  const remove = async (uuid: string) => {
+    const response = await axiosInstance.delete(
+      `/api/v1/student/delete/${uuid}`
+    );
+    const data = response.data;
+    if (!data.success) {
+      return {
+        success: false,
+        message: data.message || 'Something went wrong',
+      };
+    } else {
+      return {
+        success: true,
+        data: data.data,
+      };
+    }
+  };
+
   return {
     index,
     create,
+    update,
+    remove,
   };
 };

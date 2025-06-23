@@ -54,7 +54,7 @@ interface Grade {
 }
 
 export default function GradesPage() {
-  const { index, create } = useGrade();
+  const { index, create, update, remove } = useGrade();
   const [grades, setGrades] = useState<Grade[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,10 +74,10 @@ export default function GradesPage() {
       if (response.success) {
         setGrades(response.data.grades);
       } else {
-        toast(response.message || 'Something went wrong');
+        toast.error(response.message || 'Something went wrong');
       }
     } catch (error: any) {
-      toast(error.message || 'Something went wrong');
+      toast.error(error.message || 'Something went wrong');
     }
     setIsLoading(false);
   };
@@ -118,7 +118,7 @@ export default function GradesPage() {
     try {
       let response: any = { success: false, message: '', data: null };
       if (editUUID) {
-        // response = await update(editUUID, formData);
+        response = await update(editUUID, formData);
       } else {
         response = await create(formData);
       }
@@ -132,10 +132,10 @@ export default function GradesPage() {
         setIsAddDialogOpen(false);
         fetchData();
       } else {
-        toast(response.message || 'Something went wrong');
+        toast.error(response.message || 'Something went wrong');
       }
     } catch (error: any) {
-      toast(error.message || 'Something went wrong');
+      toast.error(error.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -153,7 +153,33 @@ export default function GradesPage() {
   };
 
   const handleDelete = async (uuid: string) => {
-    console.log(`Delete grade with UUID: ${uuid}`);
+    if (window.confirm('Are you sure you want to delete this grade?')) {
+      setIsLoading(true);
+      try {
+        const response = await remove(uuid);
+        if (response.success) {
+          fetchData();
+          toast.success('Grade deleted successfully');
+        } else {
+          toast.error(response.message || 'Something went wrong');
+        }
+      } catch (error: any) {
+        toast.error(error.message || 'Something went wrong');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleReset = () => {
+    setFormData({
+      score: 0,
+      grade: '',
+      remark: '',
+      description: '',
+    });
+    setEditUUID(null);
+    setIsAddDialogOpen(false);
   };
 
   if (isLoading) {
@@ -175,7 +201,7 @@ export default function GradesPage() {
             Export
           </Button>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
+            <DialogTrigger onClick={handleReset} asChild>
               <Button size='sm'>
                 <Plus className='mr-2 h-4 w-4' />
                 Add Grade

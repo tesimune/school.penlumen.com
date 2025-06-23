@@ -75,18 +75,23 @@ interface Student {
   status: string;
   parent: Parent;
   class: Class;
+  reg_number: string;
+  avatar: string;
+  class_uuid: string;
+  parent_uuid: string;
 }
 
 export default function StudentsPage() {
   const { index: userIndex } = useUser();
   const { index: classIndex } = useClass();
-  const { index: studentIndex, create } = useStudent();
+  const { index: studentIndex, create, update, remove } = useStudent();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
   const [parents, setParents] = useState<Parent[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
+  const [editUUID, setEditUUID] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     avatar: '',
@@ -122,6 +127,12 @@ export default function StudentsPage() {
     fetchData();
   }, []);
 
+  const filteredStudents = students.filter(
+    (student) =>
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.class.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -137,7 +148,12 @@ export default function StudentsPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await create(formData);
+      let response;
+      if (editUUID) {
+        response = await update(editUUID, formData);
+      } else {
+        response = await create(formData);
+      }
       if (response.success) {
         fetchData();
         setIsAddDialogOpen(false);
@@ -149,10 +165,10 @@ export default function StudentsPage() {
           parent_uuid: '',
         });
       } else {
-        toast(response.message || 'Something went wrong');
+        toast.error(response.message || 'Something went wrong');
       }
     } catch (error: any) {
-      toast(error.message || 'Something went wrong');
+      toast.error(error.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -162,11 +178,48 @@ export default function StudentsPage() {
     setFormData({ ...formData, avatar: '' });
   };
 
-  const filteredStudents = students.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.class.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleEdit = (student: Student) => {
+    setEditUUID(student.uuid);
+    setFormData({
+      name: student.name,
+      avatar: student.avatar,
+      reg_number: student.reg_number,
+      class_uuid: student.class_uuid,
+      parent_uuid: student.parent_uuid,
+    });
+    setIsAddDialogOpen(true);
+  };
+
+  const handleDelete = async (student: Student) => {
+    if (confirm(`Are you sure you want to delete ${student.name}?`)) {
+      setIsLoading(true);
+      try {
+        const response = await remove(student.uuid);
+        if (response.success) {
+          fetchData();
+          toast.success('Student deleted successfully');
+        } else {
+          toast.error(response.message || 'Something went wrong');
+        }
+      } catch (error: any) {
+        toast.error(error.message || 'Something went wrong');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleReset = () => {
+    setFormData({
+      name: '',
+      avatar: '',
+      reg_number: '',
+      class_uuid: '',
+      parent_uuid: '',
+    });
+    setEditUUID(null);
+    setIsAddDialogOpen(false);
+  };
 
   if (isLoading) {
     return <IsLoading />;
@@ -187,7 +240,7 @@ export default function StudentsPage() {
             Export
           </Button>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
+            <DialogTrigger onClick={handleReset} asChild>
               <Button size='sm'>
                 <Plus className='mr-2 h-4 w-4' />
                 Add Student
@@ -195,12 +248,15 @@ export default function StudentsPage() {
             </DialogTrigger>
             <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto scroll-hidden'>
               <DialogHeader>
-                <DialogTitle>Add New Student</DialogTitle>
+                <DialogTitle>
+                  {editUUID ? 'Edit Student' : 'Add New Student'}
+                </DialogTitle>
                 <DialogDescription>
-                  Enter the student details to add them to the school system.
+                  {editUUID
+                    ? 'Update the student details below.'
+                    : 'Fill in the details to add a new student.'}
                 </DialogDescription>
               </DialogHeader>
-
               <form onSubmit={handleSubmit} className='space-y-4 py-4'>
                 {/* Avatar Upload Section */}
                 <div className='flex flex-col items-center space-y-4'>
@@ -389,7 +445,7 @@ export default function StudentsPage() {
                       !formData.class_uuid
                     }
                   >
-                    Add Student
+                    Save Student
                   </Button>
                 </DialogFooter>
               </form>
@@ -472,10 +528,17 @@ export default function StudentsPage() {
                           <DropdownMenuContent align='end'>
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>Show Student</DropdownMenuItem>
-                            <DropdownMenuItem>Edit Student</DropdownMenuItem>
+                            <DropdownMenuItem>Show Reports</DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleEdit(student)}
+                            >
+                              Edit Student
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className='text-destructive'>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(student)}
+                              className='text-destructive'
+                            >
                               Delete Student
                             </DropdownMenuItem>
                           </DropdownMenuContent>

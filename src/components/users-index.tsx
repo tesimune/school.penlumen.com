@@ -60,7 +60,7 @@ export default function UsersIndex({
   setIsLoading: (loading: boolean) => void;
   users: Users[];
 }) {
-  const { register } = useUser();
+  const { remove } = useUser();
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editUUID, setEditUUID] = useState<string | null>(null);
@@ -91,34 +91,6 @@ export default function UsersIndex({
       )
   );
 
-  const saveUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const response = await register(formData);
-
-      if (response.success) {
-        setFormData({
-          name: '',
-          email: '',
-          password: '',
-          contact: '',
-          alt_contact: '',
-          position: '',
-          address: '',
-        });
-        fetchData();
-        setIsAddDialogOpen(false);
-      } else {
-        toast(response.message || 'Something went wrong');
-      }
-    } catch (error: any) {
-      toast(error.message || 'Something went wrong');
-    } finally {
-      fetchData();
-    }
-  };
-
   const handleEdit = async (user: any) => {
     setFormData({
       name: user.name,
@@ -135,7 +107,20 @@ export default function UsersIndex({
 
   const handleDelete = async (uuid: string) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      alert(`Delete user with UUID: ${uuid}`);
+      setIsLoading(true);
+      try {
+        const response = await remove(uuid);
+        if (response.success) {
+          toast.success('User deleted successfully');
+        } else {
+          toast.error(response.message || 'Failed to delete user');
+        }
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to delete user');
+      } finally {
+        fetchData();
+        setIsLoading(false);
+      }
     }
   };
 
@@ -162,6 +147,7 @@ export default function UsersIndex({
     <div>
       <UserUpdate
         role={role}
+        editUUID={editUUID}
         formData={formData}
         setFormData={setFormData}
         fetchData={fetchData}

@@ -50,14 +50,7 @@ export default function UserCreate({
 
   useEffect(() => {
     if (role === 'staff') {
-      setPositions([
-        'principal',
-        'vice principal',
-        'teacher',
-        'administrator',
-        'counselor',
-        'librarian',
-      ]);
+      setPositions(['principal', 'vice principal', 'teacher']);
     } else if (role === 'parent') {
       setPositions(['parent', 'guardian']);
     } else {
@@ -83,10 +76,10 @@ export default function UserCreate({
         setIsAddDialogOpen(false);
         fetchData();
       } else {
-        toast(response.message || 'Something went wrong', {});
+        toast.error(response.message || 'Something went wrong', {});
       }
     } catch (error: any) {
-      toast(error.message || 'Something went wrong');
+      toast.error(error.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +105,7 @@ export default function UserCreate({
         fetchData();
         setIsAddDialogOpen(false);
       } else {
-        toast(response.message || 'Something went wrong', {
+        toast.error(response.message || 'Something went wrong', {
           action: {
             label: 'Add to branch',
             onClick: () => addToBranch(response.data.user_uuid),
@@ -120,7 +113,7 @@ export default function UserCreate({
         });
       }
     } catch (error: any) {
-      toast(error.message || 'Something went wrong');
+      toast.error(error.message || 'Something went wrong');
     } finally {
       fetchData();
     }

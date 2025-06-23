@@ -73,9 +73,9 @@ export default function BranchSelectionPage() {
 
     const response = await index();
     if (!response.success) {
-      toast(response.message || 'Something went wrong');
+      toast.error(response.message || 'Something went wrong');
     } else {
-      setBranches(response.data.branch_acccess);
+      setBranches(response.data.branch_access);
     }
   };
 
@@ -90,6 +90,7 @@ export default function BranchSelectionPage() {
     const userString = Cookies.get('user');
     const user = userString ? JSON.parse(userString) : null;
     Cookies.set('branch', selectedBranch.toString(), { expires: 7 });
+    toast.success('Branch selected successfully');
 
     if (user?.role === 'PARENT') {
       window.location.href = '/parent/dashboard';

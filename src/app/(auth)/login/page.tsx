@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -55,10 +56,12 @@ export default function LoginPage() {
       const response = await login({ role, email, password });
       if (!response.success || !response.data) {
         setMessage(response.message);
+        toast.error(response.message);
         setSuccess(false);
       } else {
         setSuccess(true);
         setMessage(response.message);
+        toast.success(response.message);
         Cookies.set('token', response.data.token, {
           expires: 7,
         });
@@ -68,6 +71,7 @@ export default function LoginPage() {
         router.push('/session');
       }
     } catch (error: any) {
+      toast.error(error.message || 'Login failed. Please try again.');
       setMessage(error.message || 'Something went wrong');
       setSuccess(false);
     } finally {

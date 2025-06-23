@@ -40,8 +40,48 @@ export const useGrade = () => {
     }
   };
 
+  const update = async (uuid: string, gradeData: any) => {
+    const response = await axiosInstance.patch(`/api/v1/grade/update/${uuid}`, {
+      score: gradeData.score,
+      grade: gradeData.grade,
+      remark: gradeData.remark,
+      description: gradeData.description,
+    });
+    const data = response.data;
+
+    if (!data.success) {
+      return {
+        success: false,
+        message: data.message || 'Something went wrong',
+      };
+    } else {
+      return {
+        success: true,
+        data: data.data,
+      };
+    }
+  };
+
+  const remove = async (uuid: string) => {
+    const response = await axiosInstance.delete(`/api/v1/grade/delete/${uuid}`);
+    const data = response.data;
+    if (!data.success) {
+      return {
+        success: false,
+        message: data.message || 'Something went wrong',
+      };
+    } else {
+      return {
+        success: true,
+        data: data.data,
+      };
+    }
+  };
+
   return {
     index,
     create,
+    update,
+    remove,
   };
 };

@@ -29,10 +29,10 @@ export default function DashboardPage() {
       if (response.success) {
         setCard(response.data);
       } else {
-        toast(response.message || 'Something went wrong');
+        toast.error(response.message || 'Something went wrong');
       }
     } catch (error: any) {
-      toast(error.message || 'Something went wrong');
+      toast.error(error.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
     }

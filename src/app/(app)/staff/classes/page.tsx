@@ -80,12 +80,13 @@ interface Teacher {
 
 export default function ClassesPage() {
   const { index: userIndex } = useUser();
-  const { index: classIndex, create } = useClass();
+  const { index: classIndex, create, update, remove } = useClass();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [classes, setClasses] = useState<Class[]>([]);
   const [teachers, setTeacher] = useState<Teacher[]>([]);
+  const [editUUID, setEditUUID] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     capacity: 0,
@@ -101,11 +102,11 @@ export default function ClassesPage() {
         setClasses(resClass.data.classes);
         setTeacher(resUser.data.user);
       } else {
-        toast(resClass.message || 'Something went wrong');
-        toast(resUser.message || 'Something went wrong');
+        toast.error(resClass.message || 'Something went wrong');
+        toast.error(resUser.message || 'Something went wrong');
       }
     } catch (error: any) {
-      toast(error.message || 'Something went wront');
+      toast.error(error.message || 'Something went wront');
     } finally {
       setIsLoading(false);
     }
@@ -114,29 +115,6 @@ export default function ClassesPage() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const response = await create(formData);
-      if (response.success) {
-        fetchData();
-        setFormData({
-          name: '',
-          capacity: 0,
-          teacher_uuid: '',
-        });
-      } else {
-        toast(response.message || 'Something went wrong');
-      }
-    } catch (error: any) {
-      toast(error.message || 'Something went wrong');
-    } finally {
-      setIsAddDialogOpen(false);
-      setIsLoading(false);
-    }
-  };
 
   const filteredClasses = classes.filter(
     (classItem) =>
@@ -152,6 +130,72 @@ export default function ClassesPage() {
       (teacher) => teacher.user.uuid === teacher_uuid
     );
     return teacher ? teacher.user.name : '';
+  };
+
+  const handleEdit = (classItem: Class) => {
+    setEditUUID(classItem.uuid);
+    setFormData({
+      name: classItem.name,
+      capacity: classItem.capacity,
+      teacher_uuid: classItem.teacher_uuid,
+    });
+    setIsAddDialogOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      let response;
+      if (editUUID) {
+        response = await update(editUUID, formData);
+      } else {
+        response = await create(formData);
+      }
+      if (response.success) {
+        fetchData();
+        setFormData({
+          name: '',
+          capacity: 0,
+          teacher_uuid: '',
+        });
+      } else {
+        toast.error(response.message || 'Something went wrong');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Something went wrong');
+    } finally {
+      setIsAddDialogOpen(false);
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (classItem: Class) => {
+    if (window.confirm(`Are you sure you want to delete ${classItem.name}?`)) {
+      setIsLoading(true);
+      try {
+        const response = await remove(classItem.uuid);
+        if (response.success) {
+          toast.success('Class deleted successfully');
+          fetchData();
+        } else {
+          toast.error(response.message || 'Failed to delete class');
+        }
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to delete class');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleReset = () => {
+    setEditUUID(null);
+    setFormData({
+      name: '',
+      capacity: 0,
+      teacher_uuid: '',
+    });
   };
 
   if (isLoading) {
@@ -173,7 +217,7 @@ export default function ClassesPage() {
             Export
           </Button>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
+            <DialogTrigger onClick={handleReset} asChild>
               <Button size='sm'>
                 <Plus className='mr-2 h-4 w-4' />
                 Add Class
@@ -181,9 +225,13 @@ export default function ClassesPage() {
             </DialogTrigger>
             <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto scroll-hidden'>
               <DialogHeader>
-                <DialogTitle>Add New Class</DialogTitle>
+                <DialogTitle>
+                  {editUUID ? 'Edit Class' : 'Add New Class'}
+                </DialogTitle>
                 <DialogDescription>
-                  Create a new class and assign it to a branch.
+                  {editUUID
+                    ? 'Update the class details below.'
+                    : 'Fill in the details to create a new class.'}
                 </DialogDescription>
               </DialogHeader>
 
@@ -284,7 +332,7 @@ export default function ClassesPage() {
                     Cancel
                   </Button>
                   <Button type='submit' disabled={!formData.name}>
-                    Create Class
+                    Save Class
                   </Button>
                 </DialogFooter>
               </form>
@@ -407,9 +455,16 @@ export default function ClassesPage() {
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem>Show Class</DropdownMenuItem>
-                            <DropdownMenuItem>Edit Class</DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleEdit(classItem)}
+                            >
+                              Edit Class
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className='text-destructive'>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(classItem)}
+                              className='text-destructive'
+                            >
                               Delete Class
                             </DropdownMenuItem>
                           </DropdownMenuContent>
