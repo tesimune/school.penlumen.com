@@ -5,54 +5,15 @@ import { motion } from 'framer-motion';
 import { useUser } from '@/hooks/user';
 import { useClass } from '@/hooks/class';
 import { useStudent } from '@/hooks/student';
-import { Download, MenuSquareIcon, Plus, Search } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Upload, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Download, Search } from 'lucide-react';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+
 import { toast } from 'sonner';
 import IsLoading from '@/components/is-loading';
+import StudentsTable from '@/components/students-table';
+import StudentDialog from '@/components/student-dialog';
 
 interface User {
   uuid: string;
@@ -239,218 +200,20 @@ export default function StudentsPage() {
             <Download className='mr-2 h-4 w-4' />
             Export
           </Button>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger onClick={handleReset} asChild>
-              <Button size='sm'>
-                <Plus className='mr-2 h-4 w-4' />
-                Add Student
-              </Button>
-            </DialogTrigger>
-            <DialogContent className='max-w-md max-h-[95vh] overflow-y-auto scroll-hidden'>
-              <DialogHeader>
-                <DialogTitle>
-                  {editUUID ? 'Edit Student' : 'Add New Student'}
-                </DialogTitle>
-                <DialogDescription>
-                  {editUUID
-                    ? 'Update the student details below.'
-                    : 'Fill in the details to add a new student.'}
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className='space-y-4 py-4'>
-                {/* Avatar Upload Section */}
-                <div className='flex flex-col items-center space-y-4'>
-                  <div className='relative'>
-                    <Avatar className='h-20 w-20'>
-                      <AvatarImage
-                        src={formData.avatar || '/placeholder.svg'}
-                      />
-                      <AvatarFallback className='text-lg'>
-                        {formData.name
-                          ? formData.name.charAt(0).toUpperCase()
-                          : '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                    {formData.avatar && (
-                      <Button
-                        type='button'
-                        variant='destructive'
-                        size='sm'
-                        className='absolute -top-2 -right-2 h-6 w-6 rounded-full p-0'
-                        onClick={removeAvatar}
-                      >
-                        <X className='h-3 w-3' />
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className='flex items-center space-x-2'>
-                    <Label htmlFor='avatar' className='cursor-pointer'>
-                      <div className='flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground'>
-                        <Upload className='h-4 w-4' />
-                        <span>Upload Photo</span>
-                      </div>
-                    </Label>
-                    <Input
-                      id='avatar'
-                      type='file'
-                      accept='image/*'
-                      className='hidden'
-                      onChange={handleAvatarChange}
-                    />
-                  </div>
-                </div>
-
-                {/* Student Name */}
-                <div className='space-y-2'>
-                  <Label htmlFor='name'>Student Name *</Label>
-                  <Input
-                    id='name'
-                    placeholder="Enter student's full name"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-
-                {/* Registration Number */}
-                <div className='space-y-2'>
-                  <Label htmlFor='reg-number'>Registration Number *</Label>
-                  <Input
-                    id='reg-number'
-                    placeholder='Enter registration number'
-                    value={formData.reg_number}
-                    onChange={(e) =>
-                      setFormData({ ...formData, reg_number: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-
-                {/* Parent Selection */}
-                <div className='space-y-2'>
-                  <Label htmlFor='parent'>Parent/Guardian *</Label>
-                  <Select
-                    value={formData.parent_uuid}
-                    onValueChange={(value) => {
-                      setFormData({
-                        ...formData,
-                        parent_uuid: value,
-                      });
-                    }}
-                    required
-                  >
-                    <SelectTrigger className='w-full'>
-                      <SelectValue placeholder='Select parent/guardian' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {parents.map((parent) => (
-                        <SelectItem
-                          key={parent.user.uuid}
-                          value={parent.user.uuid}
-                        >
-                          <div className='flex flex-col'>
-                            <span>{parent.user.name}</span>
-                            <span className='text-xs text-muted-foreground'>
-                              {parent.user.email}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Class Selection */}
-                <div className='space-y-2'>
-                  <Label htmlFor='class'>Class *</Label>
-                  <Select
-                    value={formData.class_uuid}
-                    onValueChange={(value) => {
-                      setFormData({
-                        ...formData,
-                        class_uuid: value,
-                      });
-                    }}
-                    required
-                  >
-                    <SelectTrigger className='w-full'>
-                      <SelectValue
-                        placeholder={
-                          formData.class_uuid
-                            ? 'Select class'
-                            : 'Select branch first'
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {classes.map((cls) => (
-                        <SelectItem key={cls.uuid} value={cls.uuid}>
-                          {cls.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Summary Card */}
-                {formData.name && formData.class_uuid && (
-                  <Card className='bg-muted/50'>
-                    <CardContent className='pt-4'>
-                      <div className='text-sm space-y-1'>
-                        <p>
-                          <span className='font-medium'>Student:</span>{' '}
-                          {formData.name}
-                        </p>
-                        <p>
-                          <span className='font-medium'>Registration:</span>{' '}
-                          {formData.reg_number}
-                        </p>
-                        <p>
-                          <span className='font-medium'>Class:</span>{' '}
-                          {
-                            classes.find((c) => c.uuid === formData.class_uuid)
-                              ?.name
-                          }
-                        </p>
-                        <p>
-                          <span className='font-medium'>Parent:</span>{' '}
-                          {
-                            parents.find(
-                              (p) => p.user.uuid === formData.parent_uuid
-                            )?.user.name
-                          }
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                <DialogFooter className='gap-2'>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    onClick={() => setIsAddDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type='submit'
-                    disabled={
-                      !formData.name ||
-                      !formData.reg_number ||
-                      !formData.parent_uuid ||
-                      !formData.class_uuid
-                    }
-                  >
-                    Save Student
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <StudentDialog
+            isAddDialogOpen={isAddDialogOpen}
+            setIsAddDialogOpen={setIsAddDialogOpen}
+            formData={formData}
+            setFormData={setFormData}
+            handleSubmit={handleSubmit}
+            handleReset={handleReset}
+            editUUID={editUUID}
+            setEditUUID={setEditUUID}
+            parents={parents}
+            classes={classes}
+            handleAvatarChange={handleAvatarChange}
+            removeAvatar={removeAvatar}
+          />
         </div>
       </div>
 
@@ -472,83 +235,11 @@ export default function StudentsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Class</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className='text-right'>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStudents.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className='h-24 text-center'>
-                      No students found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredStudents.map((student) => (
-                    <TableRow key={student.uuid}>
-                      <TableCell className='font-medium'>
-                        <div className='flex items-center gap-2'>
-                          <Avatar className='h-8 w-8'>
-                            <AvatarImage
-                              src={`/placeholder.svg?height=32&width=32&text=${student.name.charAt(
-                                0
-                              )}`}
-                            />
-                            <AvatarFallback>
-                              {student.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          {student.name}
-                        </div>
-                      </TableCell>
-                      <TableCell>{student.class.name}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            student.status === 'active'
-                              ? 'default'
-                              : 'secondary'
-                          }
-                        >
-                          {student.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className='text-right'>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant='ghost' size='sm'>
-                              <MenuSquareIcon />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align='end'>
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>Show Reports</DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleEdit(student)}
-                            >
-                              Edit Student
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => handleDelete(student)}
-                              className='text-destructive'
-                            >
-                              Delete Student
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+            <StudentsTable
+              filteredStudents={filteredStudents}
+              handleEdit={handleEdit}
+              handleDelete={handleDelete}
+            />
           </CardContent>
         </Card>
       </motion.div>

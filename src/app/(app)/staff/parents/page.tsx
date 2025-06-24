@@ -5,7 +5,7 @@ import { useUser } from '@/hooks/user';
 import { Download } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import UserCreate from '@/components/user-create';
-import UsersIndex from '@/components/users-index';
+import UsersIndex from '@/components/users-table';
 import IsLoading from '@/components/is-loading';
 import { Button } from '@/components/ui/button';
 

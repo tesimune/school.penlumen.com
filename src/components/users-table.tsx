@@ -49,7 +49,7 @@ interface Users {
   user: User;
 }
 
-export default function UsersIndex({
+export default function UsersTable({
   role,
   fetchData,
   setIsLoading,
