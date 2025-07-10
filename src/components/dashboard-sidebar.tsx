@@ -100,7 +100,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
     }
   }, [router]);
 
-  const APP_NAME = process.env.NEXT_PUBLIC_APP_FULL_NAME || 'School - Penlumen';
+  const APP_NAME = process.env.NEXT_PUBLIC_APP_SLUG_NAME || 'School';
 
   return (
     <SidebarProvider>
