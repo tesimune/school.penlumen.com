@@ -27,7 +27,7 @@ export default function LoginPage() {
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [role, setRole] = useState<'root' | 'admin' | 'staff' | 'parent'>(
-    'root'
+    'admin'
   );
 
   useEffect(() => {
@@ -38,13 +38,8 @@ export default function LoginPage() {
     }
     const params = new URLSearchParams(window.location.search);
     const roleParam = params.get('role');
-    if (
-      roleParam === 'admin' ||
-      roleParam === 'staff' ||
-      roleParam === 'parent' ||
-      roleParam === 'root'
-    ) {
-      setRole(roleParam);
+    if (roleParam && ['root', 'admin', 'staff', 'parent'].includes(roleParam)) {
+      setRole(roleParam as 'root' | 'admin' | 'staff' | 'parent');
     }
   }, [router]);
 
