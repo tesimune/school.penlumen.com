@@ -79,6 +79,8 @@ export default function LoginPage() {
     }
   };
 
+  const APP_NAME = process.env.NEXT_PUBLIC_APP_SLUG_NAME || 'School';
+
   return (
     <div className='flex min-h-screen items-center justify-center bg-muted p-4 sm:p-6 lg:p-8'>
       <div className='w-full max-w-sm sm:max-w-md'>
@@ -95,7 +97,9 @@ export default function LoginPage() {
                 <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 sm:h-12 sm:w-12'>
                   <School className='h-5 w-5 text-primary sm:h-6 sm:w-6' />
                 </div>
-                <span className='text-xl font-bold sm:text-2xl'>Penlumen</span>
+                <span className='text-xl font-bold sm:text-2xl'>
+                  {APP_NAME}
+                </span>
               </div>
 
               {/* Message Display */}

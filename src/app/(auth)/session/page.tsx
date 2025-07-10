@@ -199,6 +199,8 @@ export default function BranchSelectionPage() {
     window.location.href = '/login';
   };
 
+  const APP_NAME = process.env.NEXT_PUBLIC_APP_SLUG_NAME || 'School';
+
   if (isLoading) {
     return <IsLoading />;
   }
@@ -290,7 +292,7 @@ export default function BranchSelectionPage() {
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
                 <School className='h-6 w-6 text-primary' />
-                <span className='text-xl font-bold'>Penlumen</span>
+                <span className='text-xl font-bold'>{APP_NAME}</span>
               </div>
               <div className='flex gap-2'>
                 <Button

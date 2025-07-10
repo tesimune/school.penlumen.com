@@ -19,6 +19,8 @@ export default function LandingPage() {
     router.push('/login');
   }, []);
 
+  const APP_NAME = process.env.NEXT_PUBLIC_APP_SLUG_NAME || 'School';
+
   return (
     <div className='flex min-h-screen flex-col'>
       {/* Header */}
@@ -26,7 +28,7 @@ export default function LandingPage() {
         <div className='container mx-auto px-4 flex justify-between items-center h-16'>
           <div className='flex items-center gap-2'>
             <School className='h-6 w-6' />
-            <span className='text-xl font-bold'>Penlumen</span>
+            <span className='text-xl font-bold'>{APP_NAME}</span>
           </div>
           <nav className='hidden gap-6 md:flex'>
             <Link

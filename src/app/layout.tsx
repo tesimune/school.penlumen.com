@@ -13,9 +13,11 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+const APP_META = process.env.NEXT_PUBLIC_APP_FULL_NAME || 'School - Penlum';
+
 export const metadata: Metadata = {
-  title: 'Schools - Penlumen',
-  description: 'Schools from the developers of Penlumen',
+  title: APP_META,
+  description: APP_META,
 };
 
 export default function RootLayout({

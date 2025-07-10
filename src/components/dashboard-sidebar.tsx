@@ -100,6 +100,8 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
     }
   }, [router]);
 
+  const APP_NAME = process.env.NEXT_PUBLIC_APP_FULL_NAME || 'School - Penlumen';
+
   return (
     <SidebarProvider>
       <div className='flex min-h-screen w-full'>
@@ -107,7 +109,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
           <SidebarHeader>
             <div className='flex items-center gap-2 px-4 py-2'>
               <School className='h-6 w-6' />
-              <span className='text-xl font-bold'>Penlumen</span>
+              <span className='text-xl font-bold'>{APP_NAME}</span>
             </div>
           </SidebarHeader>
           <SidebarContent>
