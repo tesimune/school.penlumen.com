@@ -45,7 +45,7 @@ export default function UserUpdate({
 
   useEffect(() => {
     if (role === 'staff') {
-      setPositions(['principal', 'vice principal', 'teacher']);
+      setPositions(['administrator', 'principal', 'vice principal', 'teacher']);
     } else if (role === 'parent') {
       setPositions(['parent', 'guardian']);
     } else {
