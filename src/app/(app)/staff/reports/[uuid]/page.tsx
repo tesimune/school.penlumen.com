@@ -366,7 +366,7 @@ export default function EditableReportPage() {
             {/* Teacher's Remark */}
             <div>
               <Label className='text-sm font-medium mb-2 block'>
-                Teacher's Remark
+                Teacher Remark
               </Label>
               {isEditing ? (
                 <Textarea
@@ -387,7 +387,7 @@ export default function EditableReportPage() {
             {/* Principal's Remark */}
             <div>
               <Label className='text-sm font-medium mb-2 block'>
-                Principal's Remark
+                Principal Remark
               </Label>
               {isEditing ? (
                 <Textarea

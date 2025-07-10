@@ -473,7 +473,7 @@ export default function TraditionalResultSheet() {
             <div className='mt-3'>
               <div className='mb-4'>
                 <div className='flex items-center'>
-                  <span className='font-bold mr-2'>TEACHER'S REMARK:</span>
+                  <span className='font-bold mr-2'>TEACHER REMARK:</span>
                   <div className='flex-1 border-b border-black'>
                     {sampleResult.teacherRemark}
                   </div>
@@ -482,7 +482,7 @@ export default function TraditionalResultSheet() {
 
               <div className='mt-3'>
                 <div className='flex items-center'>
-                  <span className='font-bold mr-2'>PRINCIPAL'S REMARK:</span>
+                  <span className='font-bold mr-2'>PRINCIPAL REMARK:</span>
                   <div className='flex-1 border-b border-black'>
                     {sampleResult.principalRemark}
                   </div>

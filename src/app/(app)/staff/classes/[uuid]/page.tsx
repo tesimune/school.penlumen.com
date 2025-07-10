@@ -100,11 +100,15 @@ interface ClassData {
 }
 
 interface ClassDetailsPageProps {
-  classData?: ClassData;
+  classData: ClassData;
 }
 
-export default function ClassDetailsPage({
-  classData = {
+export default function ClassDetailsPage({}) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
+
+  const classData = {
     uuid: 'class-123',
     name: 'JSS 2A',
     description: 'Junior Secondary School Class 2A - Science Track',
@@ -203,11 +207,7 @@ export default function ClassDetailsPage({
         attendance_percentage: 96,
       },
     ],
-  },
-}: ClassDetailsPageProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
+  };
 
   // Filter students based on search
   const filteredStudents = classData.students.filter(
@@ -528,7 +528,7 @@ export default function ClassDetailsPage({
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => viewStudentDetails(student)}
+                                // onClick={() => viewStudentDetails(student)}
                               >
                                 <Eye className='mr-2 h-4 w-4' />
                                 View Details

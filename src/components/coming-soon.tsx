@@ -104,7 +104,7 @@ export default function ComingSoonPage() {
             >
               <Sparkles className='h-4 w-4' />
               <span className='text-sm font-medium'>
-                Thanks! We'll notify you when it's ready.
+                Thanks! We will notify you when it is ready.
               </span>
             </motion.div>
           )}

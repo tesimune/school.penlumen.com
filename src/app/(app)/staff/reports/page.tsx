@@ -78,10 +78,10 @@ interface Report {
 }
 
 interface ReportsPageProps {
-  userRole?: 'admin' | 'teacher' | 'staff';
+  userRole: 'admin' | 'teacher' | 'staff';
 }
 
-export default function ReportsPage({ userRole = 'admin' }: ReportsPageProps) {
+export default function ReportsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [classFilter, setClassFilter] = useState('all');
