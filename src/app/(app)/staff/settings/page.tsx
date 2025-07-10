@@ -303,7 +303,7 @@ export default function GradesPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Grade</TableHead>
-                  <TableHead>Score Range</TableHead>
+                  <TableHead>Description</TableHead>
                   <TableHead>Remark</TableHead>
                   <TableHead>Created Date</TableHead>
                   <TableHead className='text-right'>Actions</TableHead>
@@ -327,7 +327,7 @@ export default function GradesPage() {
                           </Badge>
                         </div>
                       </TableCell>
-                      <TableCell>{grade.score}% and above</TableCell>
+                      <TableCell>{grade.description}</TableCell>
                       <TableCell>{grade.remark}</TableCell>
                       <TableCell>{grade.created_at}</TableCell>
                       <TableCell className='text-right'>
