@@ -73,7 +73,11 @@ export default function ClassDialog({
 }) {
   return (
     <div>
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      <Dialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        modal={false}
+      >
         <DialogTrigger onClick={handleReset} asChild>
           <Button size='sm'>
             <Plus className='mr-2 h-4 w-4' />
