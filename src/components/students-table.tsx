@@ -18,7 +18,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Link, MenuSquareIcon } from 'lucide-react';
+import { MenuSquareIcon } from 'lucide-react';
+import Link from 'next/link';
 
 interface User {
   uuid: string;
@@ -114,6 +115,9 @@ export default function StudentsTable({
                         <Link href={`/staff/students/${student.uuid}`}>
                           Show Reports
                         </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEdit(student)}>
+                        Edit Student
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
