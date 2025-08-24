@@ -232,28 +232,45 @@ export default function StudentDialog({
             {/* Class Selection */}
             <div className='space-y-2'>
               <Label htmlFor='class'>Class *</Label>
-              <Command>
-                <CommandInput placeholder='Search class...' />
-                <CommandList>
-                  <CommandEmpty>No class found.</CommandEmpty>
-                  <CommandGroup>
-                    {classes.map((cls) => (
-                      <CommandItem
-                        key={cls.uuid}
-                        value={cls.uuid}
-                        onSelect={(value) => {
-                          setFormData({
-                            ...formData,
-                            class_uuid: value,
-                          });
-                        }}
-                      >
-                        {cls.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant='outline'
+                    role='combobox'
+                    className='w-full justify-between'
+                  >
+                    {formData.class_uuid
+                      ? classes.find((c) => c.uuid === formData.class_uuid)
+                          ?.name
+                      : 'Select class'}
+                    <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className='w-full p-0'>
+                  <Command>
+                    <CommandInput placeholder='Search class...' />
+                    <CommandList>
+                      <CommandEmpty>No class found.</CommandEmpty>
+                      <CommandGroup>
+                        {classes.map((cls) => (
+                          <CommandItem
+                            key={cls.uuid}
+                            value={cls.uuid}
+                            onSelect={(value) => {
+                              setFormData({
+                                ...formData,
+                                class_uuid: value,
+                              });
+                            }}
+                          >
+                            {cls.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Summary Card */}
