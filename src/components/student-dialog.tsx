@@ -105,7 +105,7 @@ export default function StudentDialog({
           <form onSubmit={handleSubmit} className='space-y-4 py-4'>
             {/* Avatar Upload Section */}
             <div className='flex flex-col items-center space-y-4'>
-              <div className='relative'>
+              {/* <div className='relative'>
                 <Avatar className='h-20 w-20'>
                   <AvatarImage src={formData.avatar || '/placeholder.svg'} />
                   <AvatarFallback className='text-lg'>
@@ -125,7 +125,7 @@ export default function StudentDialog({
                     <X className='h-3 w-3' />
                   </Button>
                 )}
-              </div>
+              </div> */}
 
               <div className='flex items-center space-x-2'>
                 <Label htmlFor='avatar' className='cursor-pointer'>
