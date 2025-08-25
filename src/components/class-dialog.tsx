@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import type React from 'react';
 import {
   Dialog,
   DialogContent,
@@ -46,7 +48,7 @@ interface Teacher {
   user: User;
 }
 
-export default function ClassDialog({
+const ClassDialog = ({
   isAddDialogOpen,
   setIsAddDialogOpen,
   teachers,
@@ -70,14 +72,10 @@ export default function ClassDialog({
   }) => void;
   handleSubmit: (e: React.FormEvent) => void;
   handleReset: () => void;
-}) {
+}) => {
   return (
     <div>
-      <Dialog
-        open={isAddDialogOpen}
-        onOpenChange={setIsAddDialogOpen}
-        modal={false}
-      >
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogTrigger onClick={handleReset} asChild>
           <Button size='sm'>
             <Plus className='mr-2 h-4 w-4' />
@@ -123,6 +121,7 @@ export default function ClassDialog({
                     variant='outline'
                     role='combobox'
                     className='w-full justify-between'
+                    type='button'
                   >
                     {formData.teacher_uuid
                       ? teachers.find(
@@ -162,9 +161,9 @@ export default function ClassDialog({
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='name'>Max Capacity *</Label>
+              <Label htmlFor='capacity'>Max Capacity *</Label>
               <Input
-                id='name'
+                id='capacity'
                 type='number'
                 placeholder='30'
                 value={formData.capacity}
@@ -209,7 +208,7 @@ export default function ClassDialog({
                 Cancel
               </Button>
               <Button type='submit' disabled={!formData.name}>
-                Save Class
+                {editUUID ? 'Update Class' : 'Save Class'}
               </Button>
             </DialogFooter>
           </form>
@@ -217,4 +216,6 @@ export default function ClassDialog({
       </Dialog>
     </div>
   );
-}
+};
+
+export default ClassDialog;

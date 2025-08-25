@@ -1,4 +1,4 @@
-import React from 'react';
+'use client';
 import Link from 'next/link';
 import {
   Table,
@@ -30,14 +30,6 @@ interface Class {
   teacher_uuid: string;
 }
 
-interface User {
-  uuid: string;
-  name: string;
-}
-
-interface Teacher {
-  user: User;
-}
 export default function ClassesTable({
   filteredClasses,
   searchQuery,

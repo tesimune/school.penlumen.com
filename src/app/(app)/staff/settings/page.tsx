@@ -142,14 +142,18 @@ export default function GradesPage() {
   };
 
   const handleEdit = async (grade: Grade) => {
+    setIsAddDialogOpen(false);
+    setEditUUID(grade.uuid);
     setFormData({
       score: grade.score,
       grade: grade.grade,
       remark: grade.remark,
       description: grade.description,
     });
-    setEditUUID(grade.uuid);
-    setIsAddDialogOpen(true);
+    // Small delay to prevent dialog conflicts
+    setTimeout(() => {
+      setIsAddDialogOpen(true);
+    }, 10);
   };
 
   const handleDelete = async (uuid: string) => {

@@ -92,6 +92,9 @@ export default function UsersTable({
   );
 
   const handleEdit = async (user: any) => {
+    setIsAddDialogOpen(false);
+
+    setEditUUID(user.uuid);
     setFormData({
       name: user.name,
       email: user.email,
@@ -101,8 +104,11 @@ export default function UsersTable({
       address: user.address,
       password: '',
     });
-    setEditUUID(user.uuid);
-    setIsAddDialogOpen(true);
+
+    // Small delay to prevent dialog conflicts
+    setTimeout(() => {
+      setIsAddDialogOpen(true);
+    }, 10);
   };
 
   const handleDelete = async (uuid: string) => {
@@ -214,21 +220,37 @@ export default function UsersTable({
                           className='capitalize'
                           variant={getBadgeVariant(filter.user.position)}
                         >
-                          {filter.user.position}
+                          {filter.user.position.length > 15
+                            ? filter.user.position.slice(0, 15) + '...'
+                            : filter.user.position}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <div className='flex flex-col'>
-                          <span>{filter.user.contact}</span>
+                          <span>
+                            {filter.user.contact.length > 15
+                              ? filter.user.contact.slice(0, 15) + '...'
+                              : filter.user.contact}
+                          </span>
                           {filter.user.alt_contact && (
                             <span className='text-xs text-muted-foreground'>
-                              {filter.user.alt_contact}
+                              {filter.user.alt_contact.length > 15
+                                ? filter.user.alt_contact.slice(0, 15) + '...'
+                                : filter.user.alt_contact}
                             </span>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>{filter.user.email}</TableCell>
-                      <TableCell>{filter.user.address}</TableCell>
+                      <TableCell>
+                        {filter.user.email.length > 15
+                          ? filter.user.email.slice(0, 15) + '...'
+                          : filter.user.email}
+                      </TableCell>
+                      <TableCell>
+                        {filter.user.address.length > 15
+                          ? filter.user.address.slice(0, 15) + '...'
+                          : filter.user.address}
+                      </TableCell>
                       <TableCell className='text-right'>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

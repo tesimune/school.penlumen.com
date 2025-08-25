@@ -140,6 +140,8 @@ export default function StudentsPage() {
   };
 
   const handleEdit = (student: Student) => {
+    setIsAddDialogOpen(false);
+
     setEditUUID(student.uuid);
     setFormData({
       name: student.name,
@@ -148,7 +150,11 @@ export default function StudentsPage() {
       class_uuid: student.class_uuid,
       parent_uuid: student.parent_uuid,
     });
-    setIsAddDialogOpen(true);
+
+    // Small delay to prevent dialog conflicts
+    setTimeout(() => {
+      setIsAddDialogOpen(true);
+    }, 10);
   };
 
   const handleDelete = async (student: Student) => {

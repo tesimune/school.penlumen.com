@@ -6,17 +6,9 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useClass } from '@/hooks/class';
 import { useUser } from '@/hooks/user';
-import { Download, Plus, Search } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import { Download, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import {
-  Card,
-  CardTitle,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from '@/components/ui/card';
-
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { toast } from 'sonner';
 import IsLoading from '@/components/is-loading';
 import ClassesTable from '@/components/classes-table';
@@ -49,7 +41,7 @@ export default function ClassesPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [classes, setClasses] = useState<Class[]>([]);
-  const [teachers, setTeacher] = useState<Teacher[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [editUUID, setEditUUID] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -64,13 +56,13 @@ export default function ClassesPage() {
       const resUser = await userIndex('staff');
       if (resClass.success && resUser) {
         setClasses(resClass.data.classes);
-        setTeacher(resUser.data.user);
+        setTeachers(resUser.data.user);
       } else {
         toast.error(resClass.message || 'Something went wrong');
         toast.error(resUser.message || 'Something went wrong');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Something went wront');
+      toast.error(error.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -97,13 +89,20 @@ export default function ClassesPage() {
   };
 
   const handleEdit = (classItem: Class) => {
+    setIsAddDialogOpen(false);
+
+    // Set edit data
     setEditUUID(classItem.uuid);
     setFormData({
       name: classItem.name,
       capacity: classItem.capacity,
       teacher_uuid: classItem.teacher_uuid,
     });
-    setIsAddDialogOpen(true);
+
+    // Small delay to prevent dialog conflicts
+    setTimeout(() => {
+      setIsAddDialogOpen(true);
+    }, 10);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -117,12 +116,11 @@ export default function ClassesPage() {
         response = await create(formData);
       }
       if (response.success) {
+        toast.success(
+          editUUID ? 'Class updated successfully' : 'Class created successfully'
+        );
         fetchData();
-        setFormData({
-          name: '',
-          capacity: 0,
-          teacher_uuid: '',
-        });
+        handleReset();
       } else {
         toast.error(response.message || 'Something went wrong');
       }

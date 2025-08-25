@@ -1,7 +1,7 @@
-import ComingSoonPage from '@/components/coming-soon';
 import React from 'react';
+import ComingSoonPage from '@/components/coming-soon';
 
-export default function page() {
+export default function DashboardPage() {
   return (
     <div>
       <ComingSoonPage />
