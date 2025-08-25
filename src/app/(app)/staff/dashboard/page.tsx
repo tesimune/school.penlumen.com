@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import Reports from '@/components/dashboard/reports';
 import Analytics from '@/components/dashboard/analytics';
+// import Overview from '@/components/dashboard/overview';
 import { BookOpen, GraduationCap, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,7 +11,6 @@ import { useEffect, useState } from 'react';
 import IsLoading from '@/components/is-loading';
 import { useApp } from '@/hooks/app';
 import { toast } from 'sonner';
-// import Overview from '@/components/dashboard/overview';
 
 export default function DashboardPage() {
   const { dashboard } = useApp();
@@ -95,7 +95,7 @@ export default function DashboardPage() {
                   <CardTitle className='text-sm font-medium'>
                     Total Staffs
                   </CardTitle>
-                  <GraduationCap className='h-4 w-4 text-muted-foreground' />
+                  <Users className='h-4 w-4 text-muted-foreground' />
                 </CardHeader>
                 <CardContent>
                   <div className='text-2xl font-bold'>{card.total_staffs}</div>
@@ -121,7 +121,7 @@ export default function DashboardPage() {
                   <CardTitle className='text-sm font-medium'>
                     Total Students
                   </CardTitle>
-                  <Users className='h-4 w-4 text-muted-foreground' />
+                  <GraduationCap className='h-4 w-4 text-muted-foreground' />
                 </CardHeader>
                 <CardContent>
                   <div className='text-2xl font-bold'>
