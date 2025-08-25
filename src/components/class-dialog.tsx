@@ -11,23 +11,17 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from '@/components/ui/popover';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Button } from './ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from './ui/card';
-import { ChevronsUpDown, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 interface Class {
   uuid: string;
@@ -115,49 +109,29 @@ const ClassDialog = ({
             {/* Teacher Selection */}
             <div className='space-y-2'>
               <Label htmlFor='teacher'>Class Teacher *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant='outline'
-                    role='combobox'
-                    className='w-full justify-between'
-                    type='button'
-                  >
-                    {formData.teacher_uuid
-                      ? teachers.find(
-                          (t) => t.user.uuid === formData.teacher_uuid
-                        )?.user.name
-                      : 'Select teacher'}
-                    <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className='w-full p-0'>
-                  <Command>
-                    <CommandInput placeholder='Search teacher...' />
-                    <CommandList>
-                      <CommandEmpty>No teacher found.</CommandEmpty>
-                      <CommandGroup>
-                        {teachers.map((teacher) => (
-                          <CommandItem
-                            key={teacher.user.uuid}
-                            value={teacher.user.uuid}
-                            onSelect={(value) => {
-                              setFormData({
-                                ...formData,
-                                teacher_uuid: value,
-                              });
-                            }}
-                          >
-                            <div className='flex flex-col'>
-                              <span>{teacher.user.name}</span>
-                            </div>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <Select
+                value={formData.teacher_uuid}
+                onValueChange={(value) => {
+                  setFormData({
+                    ...formData,
+                    teacher_uuid: value,
+                  });
+                }}
+              >
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder='Select teacher' />
+                </SelectTrigger>
+                <SelectContent>
+                  {teachers.map((teacher) => (
+                    <SelectItem
+                      key={teacher.user.uuid}
+                      value={teacher.user.uuid}
+                    >
+                      {teacher.user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className='space-y-2'>
