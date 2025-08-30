@@ -91,7 +91,7 @@ export default function StudentsTable({
                     {student.name}
                   </div>
                 </TableCell>
-                <TableCell>{student.class.name}</TableCell>
+                <TableCell>{student.class?.name || 'Current'}</TableCell>
                 <TableCell>
                   <Badge
                     variant={

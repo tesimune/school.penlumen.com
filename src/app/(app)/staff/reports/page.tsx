@@ -40,6 +40,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
+import ComingSoonPage from '@/components/coming-soon';
 
 interface Student {
   uuid: string;
@@ -321,6 +322,11 @@ export default function ReportsPage() {
       </Badge>
     );
   };
+  return (
+    <div>
+      <ComingSoonPage />
+    </div>
+  );
 
   return (
     <div className='space-y-6 p-6'>
